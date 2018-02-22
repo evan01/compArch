@@ -27,7 +27,7 @@ We will receive as input...
 
 Our Cache has 128 bit blocks, -> 7 bits for OFFSET.
 We have 32 free/used blocks in the cache at any time -> 5 bits for INDEX
-We have 32 bit addresses, so 32-7-5 = 3 bits for TAG 
+We have 32 bit addresses, so 32-7-5-17 = 3 bits for TAG 
 
 ---------EXAMPLE----------
 We want to read a 32 bits (1 word from the address below)
@@ -43,7 +43,6 @@ Also, for this assignment, we are only reading and writing words (32 bits)
 3. Remaining bits up to 15th make up the tag = 111 =(3) (could have used all remaining bits)
 
 Our Cache Data Structure will look something like this...
-Assuming we use a 2-2way set associative cache
 [ValidBit| DirtyBit | TAG (3 bits) | Index(5 bits) | Ofset(7 bits)| DATA (32 bits)]
 
 After our first read.
