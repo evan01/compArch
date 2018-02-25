@@ -77,8 +77,9 @@ CONSTANT ADDRESS_3 : std_logic_vector(31 downto 0) := "0000000000000000000000000
 CONSTANT ADDRESS_4 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
 CONSTANT ADDRESS_5 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
 
-CONSTANT DATA_8 : std_logic_vector(31 downto 0) := "00000000000000000000000000001000"; --8
-CONSTANT DATA_21 : std_logic_vector(31 downto 0) := "00000000000000000000000000010101"; --21
+CONSTANT DATA_1: : std_logic_vector (31 downto 0):= "00000000000000000000000000000000";
+
+
 
 begin
 
@@ -130,16 +131,13 @@ begin
 --There are 16 cases that our tests need to be able to handle
 --Start with the writing tests because you can't test reads on an empty cache
 
---CASE 1: SANITY TEST for reading and writing
+--WRITING TESTS
 s_addr <= ADDRESS_0;
-s_read <= '0';
-s_write <= '1';
-s_writedata <= DATA_8;
+s
 
-WAIT FOR clk_period/2;
-WAIT until s_waitrequest = '0';
-
-
+--READING TESTS
+    --Test 1: A Generic Read.
+s_addr = 
 end process;
 
 end;

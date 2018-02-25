@@ -51,13 +51,20 @@ end component;
 component mem_controller port(
 	clock : in std_logic;
 	reset : in std_logic;
+    s_read: in std_logic;
+    s_write: in std_logic;
 
-	m_addr : out integer range 0 to ram_size-1;
+    s_addr : in std_logic_vector (31 downto 0);
+    m_waitrequest : in std_logic;
+    s_writedata : in std_logic_vector (31 downto 0);
+    m_readdata : in std_logic_vector (7 downto 0);
+
+    s_readdata : out std_logic_vector (31 downto 0);
+    mem_controller_wait: out std_logic;
+    m_addr : out integer range 0 to ram_size-1;
 	m_read : out std_logic;
-	m_readdata : in std_logic_vector (7 downto 0);
 	m_write : out std_logic;
-	m_writedata : out std_logic_vector (7 downto 0);
-	m_waitrequest : in std_logic
+	m_writedata : out std_logic_vector (7 downto 0)
 );
 end component;
 
@@ -89,7 +96,12 @@ begin
           m_readdata => m_readdata,
           m_write => m_write,
           m_writedata => m_writedata,
-          m_waitrequest => m_waitrequest
+          m_waitrequest => m_waitrequest,
+          s_read => s_read,
+          s_write => s_write,
+          s_addr => s_addr,
+          s_writedata => s_writedata,
+          s_readdata => s_readdata
       );
 -- make circuits here
 
