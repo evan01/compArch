@@ -54,3 +54,22 @@ Our Cache Data Structure will look something like this...
 
 After our first read.  
 `[1 | 1 | 111 | 01000 | 1111000 | 32 bits of data]`
+
+## Signal Mapping
+`clock` -> the clock driving the sync. hardware
+
+`reset` -> when high, cache is emptied, states reset
+
+`s_addr` -> the address we want to read/ write to
+
+`s_read` -> a bit indicating whether to read/write
+
+`s_readdata` -> the data returned by the cache at *s_addr*
+
+`s_writedata` -> the data we are writing to the cache at *s_addr*
+
+`s_waitrequest` -> when high, signals that the cache is busy
+
+
+
+

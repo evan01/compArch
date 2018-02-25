@@ -1,0 +1,17 @@
+AVALON INTERFACE
+
+In order to communicate with the main memory, we will need an interface that our Cache and Memory agree on.
+AVALON is apparently a pre-defined one by Intel, that lists how a cache can communicate with the memory
+
+We will be using the AVALON MEMORY MAPPED INTERFACe (Avalon-MM), an address based R/W interface.
+
+According to Avalon... and our cache_tb.vhd file
+	1. Each input signal coresponds to 1 signal role...
+		Roles are as follows.
+			clock: IN STD_LOGIC;
+    		writedata: IN STD_LOGIC_VECTOR (7 DOWNTO 0); //The data we want to write, apparently 8 bits at a time.
+    		address: IN INTEGER RANGE 0 TO ram_size-1; //The address we write to
+    		memwrite: IN STD_LOGIC; //Whether we want to write to memory
+    		memread: IN STD_LOGIC; //Whether we want to tread to memory
+    		readdata: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+    		waitrequest: OUT STD_LOGIC // asserted by memory when it's unable to respond to R/W
