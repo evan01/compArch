@@ -22,7 +22,15 @@ signal state : read_states;
 signal hit: std_logic := '0';
 signal valid: std_logic := '0';
 signal dirty: std_logic := '0';
+
+--mem signals, should be handled by mem_controller
 signal m_waitrequest: std_logic := '0';
+signal m_writedata: std_logic_vector(7 downto 0);
+signal m_readdata: std_logic_vector(7 downto 0);
+signal m_write: std_logic := '0';
+signal m_read: std_logic := '0';
+
+signal cache_index: integer;
 signal temp_data: std_logic_vector(127 downto 0);
 
 
@@ -58,23 +66,31 @@ BEGIN
                     end if;
                 end if;
             when D =>
+                --not too sure about this part
                 offset := to_integer(unsigned(s_addr(6 downto 0)));
-                s_readdata <= temp_data(offset+32 downto offset);
+                s_readdata <= cache_array(cache_index)(offset+32 downto offset);
                 s_waitrequest <= '0';
                 state <= I;
             when MW =>
+                m_writedata <= temp_data(7 downto 0);
+                m_write <= '1';
+                --not too sure about which byte to send
                 if (m_waitrequest = '1') then
                     state <= MW;
                 else
+                    m_write <= '0';
                     state <= MR;
                 end if;
             when MR =>
+                m_read <= '1';
                 if (m_waitrequest = '1') then
                     state <= MR;
                 else
+                    m_read <= '0';
                     state <= RP;
                 end if;
             when RP =>
+                cache_array(cache_index)(7 downto 0) <= m_readdata;
                 state <= D;
         end case;
     end if;
@@ -89,7 +105,8 @@ BEGIN
                 hit <= '1';
                 dirty <= cache_array(i)(126);
                 valid <= cache_array(i)(127);
-                temp_data <= cache_array(i);
+                --temp_data <= cache_array(i);
+                cache_index <= i;
             end if;
         END LOOP;
     end if;
