@@ -59,13 +59,8 @@ BEGIN
                 end if;
             when D =>
                 offset := to_integer(unsigned(s_addr(6 downto 0)));
-                if(offset + 32 > 125) then
-                    --TODO: handle offset
-                else
-                    s_readdata <= temp_data(offset+32 downto offset);
-                end if;
+                s_readdata <= temp_data(offset+32 downto offset);
                 s_waitrequest <= '0';
-
                 state <= I;
             when MW =>
                 if (m_waitrequest = '1') then
