@@ -45,13 +45,7 @@ begin
                 m_addr <= to_integer(unsigned(s_addr(14 downto 2) & "00")) + var_mem_index;
                 -- Set the mem controller signal busy
                 mem_controller_wait <= '1';
-                if (var_mem_index = 0) then
-                    if (s_read = '1') then
-                    elsif (s_write = '1') then
-                    end if;
-                else
-                    -- Shift temp data to prepare for new input
-                end if;
+                -- Shift temp data to prepare for new input
                 if (s_read = '1') then
                     m_read <= '1';
                     if (var_mem_index = 0) then
