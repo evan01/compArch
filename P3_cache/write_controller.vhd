@@ -12,6 +12,11 @@ entity write_controller is
     s_write : in std_logic;
 	  s_writedata : in std_logic_vector (31 downto 0);
     s_waitrequest : out std_logic
+    
+    m_addr : out integer range 0 to ram_size -1;
+    m_read : out std_logic;
+    m_write : out std_logic;
+    m_writedata : out std_logic_vector(7 downto 0);
     );
 end write_controller;
 
@@ -35,6 +40,7 @@ signal new_cache_addr : std_logic_vector(31 downto 0);
 BEGIN
   
 write_fsm : process(clock, reset)
+    variable count :integer := 0;
 BEGIN
     if (reset ='1') then
         state <= idle;
@@ -51,7 +57,6 @@ BEGIN
             
         
         when W is =>
-            s_waitrequest <= '1';
             tag <= s_addr(14 downto 7);
             index <= s_addr(6 downto 2);
             offset <= s_addr(1 downto 0);
@@ -87,16 +92,26 @@ BEGIN
 			   
 			   
 			   when mem_write =>
-			     new_cache_addr <= cache_row(135 downto 128);
-			     new_cache_addr <= "00";
-			     new_cache_addr <= index;
+			     if count < 4
+			           m_write <= '1';
+			           m_read <= '0';
+			           new_cache_addr <= cache_row(135 downto 128);
+			           new_cache_addr <= "00";
+			           new_cache_addr <= index;
 			     
-			     -- m_addr signal to write to memory?
-			     -- Need to add loop to stall the process till the data is sent to the memory
-			     
-			     next_state <= mem_read;
+			           m_addr <= (to_integer(unsigned(new_cache_addr));
+			           m_writedata <= cache(index)(127 downto 0) ((count * 8) + 7 + 32*offset downto  (count * 8) + 32*offset);   
+			           count := count + 1;
+			           
+			      elsif count = 4    
+			         next_state <= mem_read;
+			      end if;   
+			      
 
 			   when mem_read =>
+			       count := 0;
+			       s_waitrequest <= '0';
+			       m_write <= '0';
 			       cache_row(127 downto 0) <= s_writedata(31 downto 0);
 			       cache_row(135 downto 128) <= tag;
 			       cache_row(137 downto 136) <= "01";
