@@ -48,31 +48,28 @@ begin
                 -- Set the mem controller signal busy
                 mem_controller_wait <= '1';
 
-                if (s_read = '1') then
+                if (mem_controller_read = '1') then
                     m_read <= '1';
                     if (var_mem_index = 0) then
                         var_mem_controller_data := (others => '0');
                     end if;
-                elsif (s_write = '1') then
+                elsif (mem_controller_write = '1') then
                     m_write <= '1';
-                    if (var_mem_index = 0) then
-                        var_mem_controller_data := s_writedata;
-                    end if;
                     m_writedata <= var_mem_controller_data(7 downto 0);
                 end if;
-								-- Shift mem controller data
-								var_mem_controller_data := std_logic_vector(shift_right(unsigned(var_mem_controller_data), 8));
+					-- Shift mem controller data
+					var_mem_controller_data := std_logic_vector(shift_right(unsigned(var_mem_controller_data), 8));
                 state <= S2;
             when S2 =>
                 if( m_waitrequest = '0') then
                     state <= S3;
                 end if;
             when S3 =>
-                if (s_read = '1') then
+                if (mem_controller_read = '1') then
                     m_read <= '0';
-										-- Read the memory data into the top part of the mem controller data
-                    var_mem_controller_data( 127 downto 119) <= m_readdata;
-                elsif (s_write = '1') then
+					-- Read the memory data into the top part of the mem controller data
+                    var_mem_controller_data( 127 downto 119) := m_readdata;
+                elsif (mem_controller_write = '1') then
                     m_write <= '0';
                 end if;
 
