@@ -38,7 +38,11 @@ begin
     if (reset ='1') then
         var_mem_index := 0;
         s_readdata <= (others => '0');
-    elsif (rising_edge(clock)) then
+        m_read <='0';
+        m_write <='0';
+        m_addr <= 0;
+        m_writedata <= (others => '0');
+        mem_controller_wait <= '0';
         case state is
             when S1 =>
                 -- Update the mem address to the byte we want to update

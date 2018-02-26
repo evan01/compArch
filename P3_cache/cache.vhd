@@ -8,16 +8,19 @@ port(
 	clock : in std_logic;
 	reset : in std_logic;
 
-	-- Avalon interface --
+	-- INPUT <-> CACHE--
 	s_addr : in std_logic_vector (31 downto 0);
 	s_read : in std_logic;
-	s_readdata : out std_logic_vector (31 downto 0);
 	s_write : in std_logic;
-	s_writedata : in std_logic_vector (31 downto 0);
-	s_waitrequest : out std_logic;
+    s_writedata : in std_logic_vector (31 downto 0);
 
+    s_waitrequest : out std_logic;
+    s_readdata : out std_logic_vector (31 downto 0);
+   
+    --CACHE<->MEM
     m_readdata : in std_logic_vector (7 downto 0);
     m_waitrequest : in std_logic;
+
 	m_addr : out integer range 0 to ram_size-1;
 	m_read : out std_logic;
 	m_write : out std_logic;
@@ -67,7 +70,9 @@ component mem_controller port(
 	m_writedata : out std_logic_vector (7 downto 0)
 );
 end component;
-
+signal mem_controller_wait: std_logic;
+signal mem_controller_read: std_logic;
+signal mem_controller_write: std_logic;
 begin
 
     read_contr: read_controller PORT MAP(
@@ -97,11 +102,12 @@ begin
           m_write => m_write,
           m_writedata => m_writedata,
           m_waitrequest => m_waitrequest,
-          s_read => s_read,
-          s_write => s_write,
+          s_read => mem_controller_read,
+          s_write => mem_controller_write,
           s_addr => s_addr,
           s_writedata => s_writedata,
-          s_readdata => s_readdata
+          s_readdata => s_readdata,
+          mem_controller_wait => mem_controller_wait
       );
 -- make circuits here
 

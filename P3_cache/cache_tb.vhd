@@ -71,7 +71,7 @@ signal m_waitrequest : std_logic;
 
 -- ADDRESSES AND TEST VALUES. Last 2 bits redundant
 CONSTANT ADDRESS_0 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
-CONSTANT ADDRESS_1 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
+CONSTANT ADDRESS_1 : std_logic_vector(31 downto 0) := "00000000000000000000000110000000";
 CONSTANT ADDRESS_2 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
 CONSTANT ADDRESS_3 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
 CONSTANT ADDRESS_4 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
@@ -126,20 +126,129 @@ end process;
 
 
 test_process : process
+
+procedure sanityTestRW is 
 begin
---There are 16 cases that our tests need to be able to handle
---Start with the writing tests because you can't test reads on an empty cache
+    s_addr <= ADDRESS_0;
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+    s_read <= '1';
+    s_write <= '0';
+    WAIT FOR clk_period;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '1';
+    ASSERT (s_waitrequest = '0') REPORT "Wait request should be set low" SEVERITY ERROR;
+    WAIT for clk_period*4;
+end procedure;
 
---CASE 1: SANITY TEST for reading and writing
-s_addr <= ADDRESS_0;
-s_read <= '0';
-s_write <= '1';
-s_writedata <= DATA_8;
+--WRITE TESTS
+procedure write_match_clean_valid is 
+begin
+    --Only difference is that there should be a dirty bit set internally
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_21;
+    s_addr <= ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
 
-WAIT FOR clk_period/2;
-WAIT until s_waitrequest = '0';
+    --ASERTION TEST
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
 
+end procedure;
+
+procedure write_mismatch_clean_valid is 
+begin
+    --Just write, no memory change!!!!
+
+    --Just need to write to the same area in the cache twice.
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_21;
+    s_addr <= ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
+end procedure;
+
+procedure write_match_dirty_valid is 
+begin
+    s_read <= '0';
+    s_write <= '1';
+end procedure;
+
+procedure write_mismatch_dirty_valid is 
+begin
+    s_read <= '0';
+    s_write <= '1';
+end procedure;
+
+procedure write_match_clean_invalid is --Not so relevant
+begin
+    s_read <= '0';
+    s_write <= '1';
+end procedure;
+
+--READ TESTS
+procedure read_match_clean_valid is 
+begin
+end procedure;
+
+procedure read_mismatch_clean_valid is 
+begin
+end procedure;
+
+procedure read_match_dirty_valid is 
+begin
+end procedure;
+
+procedure read_mismatch_dirty_valid is 
+begin
+end procedure;
+
+procedure read_match_clean_invalid is --Relevant
+begin
+end procedure;
+
+begin
+--Run all of the procedures here.
+sanityTestRW; --TEST a siiple read and write of an integer.
+
+write_match_clean_valid;
+write_mismatch_clean_valid;
+write_match_dirty_valid;
+write_mismatch_dirty_valid;
+write_match_clean_invalid;
+read_match_clean_valid;
+read_mismatch_clean_valid;
+read_match_dirty_valid;
+read_mismatch_dirty_valid;
+read_match_clean_invalid;
+std.env.stop(0);
 
 end process;
 
 end;
+
+--TEST REQUIREMENTS
+--      1. MAKE SURE THAT CACHE WORKS WITH AVALON
+--      2.  

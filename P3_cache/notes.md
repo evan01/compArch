@@ -49,6 +49,31 @@ Also, for this assignment, we are only reading and writing words (32 bits)
 2. Determine the `Index` of this address. = The next 5 bits! `0100 0 (8)`
 3. Remaining bits up to 15th make up the tag `= 111 =(3)` (could have used all remaining bits)
 
+### DirtyBit, ValidBit, TAG combinations
+The cache will do something different depending on what is going on with these bits.
+IF `DirtyBit` is set high, it means that the data has been updated (written to) in the cache, but not written yet in memory
+IF 'ValidBit` is set high, it means that the data you are reading is good.
+If the 'TAG' doesn't match the address you are looking for, it means you can't read and can't write until you handle it
+
+#### READ CASES (5)
+`TAG MATCH _ CLEANBIT _ VALID` -> Directly read from cache, nothing else
+`TAG MISMATCH _ CLEANBIT _VALID` -> You JUST need to replace the data in cache with propper data in memory (cache has wrong data)
+`TAG MATCH _DIRTYBIT_ VALID` -> Directly read from cache, nothing else
+`TAG MISMATCH _ DIRTYBIT _ VALID` You can't read from cache until you write what was in the cache data back to memory, and load the data you want
+`ANYTHING_INVALID` -> You have to read from memory, can't read invalid data
+
+#### WRITE CASES (5)
+`TAG MATCH _ CLEANBIT _ VALID` -> This means you are writing to the correct element, and don't have to do anything with memory
+`TAG MISMATCH _ CLEANBIT _VALID` ->Feel free to write over this, no need to update memory
+`TAG MATCH _DIRTYBIT_ VALID` -> Feel free to write over this, no need to bother memory
+`TAG MISMATCH _ DIRTYBIT _ VALID` You can't write to cache until you write what was in the cache data back to memory, and load the data you want
+`ANYTHING_INVALID` -> Irrelevant, just write anyways, set to valid, and dirty
+
+
+Writing to a DirtyBit Cache -> Is not ok, until you write to memory the old value in the cache, and then write to cache
+Writing to a CleanBit Cache -> Is ok, and you don't have to write to memory the old value.
+Reading from a DirtyBitCache
+
 Our Cache Data Structure will look something like this...  
 `[ValidBit| DirtyBit | TAG (3 bits) | Index(5 bits) | Offset(7 bits)| DATA (32 bits)]`
 
