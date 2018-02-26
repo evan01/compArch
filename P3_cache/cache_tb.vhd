@@ -70,12 +70,9 @@ signal m_waitrequest : std_logic;
 
 
 -- ADDRESSES AND TEST VALUES. Last 2 bits redundant
-CONSTANT ADDRESS_0 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
-CONSTANT ADDRESS_1 : std_logic_vector(31 downto 0) := "00000000000000000000000110000000";
-CONSTANT ADDRESS_2 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
-CONSTANT ADDRESS_3 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
-CONSTANT ADDRESS_4 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
-CONSTANT ADDRESS_5 : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
+CONSTANT ADDRESS_0 : std_logic_vector(14 downto 0) := "000000000000000";
+CONSTANT ADDRESS_1 : std_logic_vector(14 downto 0) := "111000000001100";
+CONSTANT ADDRESS_2 : std_logic_vector(14 downto 0) := "111000000000000"; --address 2 has the same tag as addr1
 
 CONSTANT DATA_8 : std_logic_vector(31 downto 0) := "00000000000000000000000000001000"; --8
 CONSTANT DATA_21 : std_logic_vector(31 downto 0) := "00000000000000000000000000010101"; --21
@@ -127,14 +124,14 @@ end process;
 
 test_process : process
 
-procedure sanityTestRW is 
+procedure sanityTestRW is --DONE
 begin
-    s_addr <= ADDRESS_0;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_0;
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_8;
     WAIT FOR clk_period/2;
-    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request sould be set high" SEVERITY ERROR;
     WAIT until s_waitrequest = '0';
     s_read <= '1';
     s_write <= '0';
@@ -149,19 +146,19 @@ begin
 end procedure;
 
 --WRITE TESTS
-procedure write_match_clean_valid is 
+procedure write_match_clean_valid is --FIX ASSERTION
 begin
     --Only difference is that there should be a dirty bit set internally
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_21;
-    s_addr <= ADDRESS_1;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
     WAIT FOR clk_period/2;
     ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
     WAIT until s_waitrequest = '0';
 
     --ASERTION TEST
-    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    --ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
     s_write <= '0';
     reset <= '1';
@@ -169,48 +166,115 @@ begin
 
 end procedure;
 
-procedure write_mismatch_clean_valid is 
+procedure write_mismatch_clean_valid is --FIX ASSERTION
 begin
-    --Just write, no memory change!!!!
+    --To set up this test you need to read to the cache location, then write to same location with dif tag
+    --Just need to write to the same area in the cache twice. (NO WRITES TO MEMORY)
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
 
-    --Just need to write to the same area in the cache twice.
+     --Just need to write to the same area in the cache twice.
     s_read <= '0';
     s_write <= '1';
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST
+    --ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
+end procedure;
+
+procedure write_match_dirty_valid is -- FIX ASSERTION
+begin
+    -- This test requires you to write to the same place twice.
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
     s_writedata <= DATA_21;
-    s_addr <= ADDRESS_1;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
     WAIT FOR clk_period/2;
     ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
     WAIT until s_waitrequest = '0';
 
     --ASERTION TEST
-    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    --ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
     s_write <= '0';
     reset <= '1';
     WAIT for clk_period*4;
 end procedure;
 
-procedure write_match_dirty_valid is 
+procedure write_mismatch_dirty_valid is -- FIX ASSERTION
 begin
-    s_read <= '0';
-    s_write <= '1';
-end procedure;
+    --To set up this test you need to read to the cache location, then write to same location with dif tag
+    --Just need to write to the same area in the cache twice. (MUST WRITE TO MEMORY)
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
 
-procedure write_mismatch_dirty_valid is 
-begin
+     --Just need to write to the same area in the cache twice.
     s_read <= '0';
     s_write <= '1';
-end procedure;
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
 
-procedure write_match_clean_invalid is --Not so relevant
-begin
+    --ASERTION TEST
+    --ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
-    s_write <= '1';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
 end procedure;
 
 --READ TESTS
+procedure seed_memory_with_data is  --Should write to memory and the cache!!!2
+begin
+    for i in 0 to 30 loop --Write to 30 slots in the cache
+        s_addrr <= std_logic_vector(to_unsigned(5,i)) & "0010000"
+        --s_writedata <= --needs a standard logic vector
+        WAIT for clk_period/2;
+        WAIT until m_waitrequest = '0';
+    end loop;
+end procedure;
+
 procedure read_match_clean_valid is 
 begin
+    --STANDARD READ test, place the data in memory first.
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1; -- Should have
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
+
 end procedure;
 
 procedure read_mismatch_clean_valid is 
@@ -237,13 +301,14 @@ write_match_clean_valid;
 write_mismatch_clean_valid;
 write_match_dirty_valid;
 write_mismatch_dirty_valid;
-write_match_clean_invalid;
+--FOR THESE TESTS< SEED THE MEMORY WITH DATA.
+seed_memory_with_data;
+
 read_match_clean_valid;
 read_mismatch_clean_valid;
 read_match_dirty_valid;
 read_mismatch_dirty_valid;
 read_match_clean_invalid;
-std.env.stop(0);
 
 end process;
 
