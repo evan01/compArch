@@ -28,7 +28,6 @@ architecture arch of write_controller is
 
 type  read_states is (idle, W, mem_write, mem_read, write_cache);  -- Define the states
 signal state : read_states;
-signal next_state : read_states;
 
 signal tag: std_logic_vector(5 downto 0); --remaining bits up to 15th
 signal index: std_logic_vector(4 downto 0); --next 5 bits
@@ -50,8 +49,11 @@ BEGIN
     elsif (rising_edge(clock)) then
         case state is
             when idle =>
-              if (s_write = '1') then 
-                next_state <= W;
+			  if (s_write = '1') then 
+			  	s_waitrequest <= '1';
+				state <= W;
+				else
+					s_waitrequest <= '0';
             end if;
 
 			when W =>
@@ -63,15 +65,15 @@ BEGIN
 				
 				--Figure out if there is a match
 				if cache_row(133 downto 128) = tag then
-					next_state <= write_cache; --There is a match
+					state <= write_cache; --There is a match
 				else
 					--Check if dirty or not
 					if(cache_row(134) = '1') then
 						--Then it is dirty, write to mem, then read correct block, then  write to cache
-						next_state <= mem_write; --No match
+						state <= mem_write; --No match
 					else
 						--Not dirty, so read the correct block to cache, then write
-						next_state <= mem_read;
+						state <= mem_read;
 					end if;
 				end if;
 
@@ -87,7 +89,7 @@ BEGIN
 			   cache_row(135) <= '1';
 			   cache_row(133 downto 128) <= tag;
 			
-			next_state <= idle;
+				state <= idle;
 				s_waitrequest <= '0';
 			   
 			when mem_write =>
@@ -103,7 +105,7 @@ BEGIN
 				if(mem_controller_wait = '0' and mem_rw_requested ='1') then 
 					mem_controller_write <= '0';
 					mem_controller_read <= '0';
-					next_state <= mem_read;
+					state <= mem_read;
 					mem_rw_requested <= '0';
 				else
 					mem_rw_requested <= '1';
@@ -129,7 +131,7 @@ BEGIN
 					cache_row(133 downto 128) <= tag;
 					cache_row(135 downto 134) <= "11"; --dirty and valid
 					cache_row(127 downto 0) <= mem_controller_data;
-					next_state <= write_cache;
+					state <= write_cache;
 					mem_rw_requested <= '0';
 				else
 					mem_rw_requested <= '1';

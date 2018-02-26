@@ -99,6 +99,9 @@ signal mem_controller_write: std_logic;
 signal mem_controller_data: std_logic_vector(127 downto 0);
 signal mem_controller_addr: std_logic_vector(14 downto 0);
 signal cache_array_signal: cache_type;
+signal read_wait: std_logic:= '0';
+signal write_wait: std_logic:= '0';
+
 begin
 
     read_contr: read_controller PORT MAP(
@@ -107,7 +110,7 @@ begin
         s_addr => s_addr,
         s_read => s_read,
         s_readdata => s_readdata,
-        s_waitrequest => s_waitrequest,
+        s_waitrequest => read_wait,
         cache_array=> cache_array_signal,
 				mem_controller_read => mem_controller_read,
 				mem_controller_write => mem_controller_write,
@@ -122,7 +125,7 @@ begin
          s_addr => s_addr,
          s_write => s_write,
          s_writedata => s_writedata,
-         s_waitrequest => s_waitrequest,
+         s_waitrequest => write_wait,
          cache_array=> cache_array_signal,
 				 mem_controller_read => mem_controller_read,
 				 mem_controller_write => mem_controller_write,
@@ -147,5 +150,5 @@ begin
           mem_controller_wait => mem_controller_wait
       );
 -- make circuits here
-
+    s_waitrequest <= read_wait or write_wait;
 end arch;

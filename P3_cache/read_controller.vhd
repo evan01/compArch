@@ -27,7 +27,7 @@ ARCHITECTURE arch OF read_controller IS
 --TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(135 DOWNTO 0);
 --signal cache_array: CACHE;
 type  read_states is (I, R, MR, MW, RP, D);  -- Define the states
-signal state, next_state: read_states;
+signal state: read_states;
 
 signal tag: std_logic_vector(5 downto 0); --remaining bits up to 15th
 signal index: std_logic_vector(4 downto 0); --next 5 bits
@@ -45,16 +45,19 @@ read_fsm : process(clock, reset)
 variable int_offset: integer;
 BEGIN
     if (reset ='1') then
-        next_state <= I;
+        state <= I;
     elsif (rising_edge(clock)) then
         case state is
             when I =>
                 if (s_read = '1') then             
-                    next_state <= R;
+                    state <= R;
+                     s_waitrequest <= '1';
+                else
+                     s_waitrequest <= '0';
                 end if;
+               
             when R =>
-                s_waitrequest <= '1';
-
+          
                 offset <= s_addr(3 downto 2); 
                 index <= s_addr(8 downto 4); 
                 tag <= s_addr(14 downto 9);
@@ -69,20 +72,20 @@ BEGIN
                     --check for cache hit
                     if (cache_block(133 downto 128) = tag) then
                         --Hit
-                        next_state <= D;
+                        state <= D;
                     else
                         --Miss
                         --if dirty, write cache block to mem then fetch block from memory
                         if (dirty = '1') then
-                            next_state <= MW;
+                            state <= MW;
                         else
                         --if clean, directly fetch from memory
-                            next_state <= MR;
+                            state <= MR;
                         end if;
                     end if;
                 else
                     --if invalid, then fetch block from memory
-                    next_state <= MR;
+                    state <= MR;
                 end if;
             when D =>
                 --when done, load cache_block into readdata output
@@ -90,7 +93,7 @@ BEGIN
                 int_offset := to_integer(unsigned(offset));
                 s_readdata <= cache_block(31+int_offset*32 downto 0 + 32*int_offset);
                 s_waitrequest <= '0';
-                next_state <= I;
+                state <= I;
             when MW =>
                 --if write to mem is needed, set m_write and put data on m_writedata
 
@@ -103,12 +106,12 @@ BEGIN
 
                 --wait for mem_controller to have written
                 if (mem_controller_wait = '1') then
-                    next_state <= MW;
+                    state <= MW;
                 else
                     --write is done
                     mem_controller_write <= '0';
                     cache_block(134) <= '0'; --reset dirty bit
-                    next_state <= MR;
+                    state <= MR;
                 end if;
             when MR =>
                 --if read from mem is necessary, set m_read
