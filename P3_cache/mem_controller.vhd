@@ -9,7 +9,7 @@ port(
 		reset : in std_logic;
     mem_controller_read: in std_logic;
     mem_controller_write: in std_logic;
-    mem_controller_addr : in std_logic_vector (31 downto 0);
+    mem_controller_addr : in std_logic_vector (14 downto 0);
 
 		mem_controller_data :inout std_logic_vector (127 downto 0);
 
