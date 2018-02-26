@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.cache_pkg.all;
 
 entity read_controller is
     generic( ram_size : INTEGER := 32768);
@@ -11,20 +12,20 @@ entity read_controller is
     s_read : in std_logic;
 	s_readdata : out std_logic_vector(31 downto 0);
     s_waitrequest : out std_logic;
-
+    cache_array: inout cache;
     --"internal" signals interfacing with mem_controller
     mem_controller_data: inout std_logic_vector(127 downto 0);
     mem_controller_addr: out std_logic_vector(14 downto 0);
     mem_controller_read : out std_logic;
     mem_controller_write: out std_logic;
     mem_controller_wait: in std_logic
-    );
+);
 end read_controller;
 
 ARCHITECTURE arch OF read_controller IS
 --TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
-TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(135 DOWNTO 0);
-signal cache_array: CACHE;
+--TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(135 DOWNTO 0);
+--signal cache_array: CACHE;
 type  read_states is (I, R, MR, MW, RP, D);  -- Define the states
 signal state, next_state: read_states;
 

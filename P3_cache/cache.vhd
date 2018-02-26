@@ -1,6 +1,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
+
+package cache_pkg is
+  type cache is array(31 downto 0) of std_logic_vector(135 downto 0);
+end package cache_pkg;
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
+
+use work.cache_pkg.all;
 
 entity cache is
 generic( ram_size : INTEGER := 32768);
