@@ -9,8 +9,15 @@ entity read_controller is
     reset : in std_logic;
     s_addr: in std_logic_vector(31 downto 0);
     s_read : in std_logic;
-	s_readdata : out std_logic_vector (31 downto 0);
-    s_waitrequest : out std_logic
+	s_readdata : out std_logic_vector(31 downto 0);
+    s_waitrequest : out std_logic;
+
+    --"internal" signals interfacing with mem_controller
+    m_writedata: out std_logic_vector(31 downto 0);
+    m_readdata: in std_logic_vector(31 downto 0);
+    m_read : out std_logic;
+    m_write: out std_logic;
+    mem_controller_wait: in std_logic
     );
 end read_controller;
 
@@ -18,99 +25,114 @@ ARCHITECTURE arch OF read_controller IS
 TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(127 DOWNTO 0);
 signal cache_array: CACHE;
 type  read_states is (I, R, MR, MW, RP, D);  -- Define the states
-signal state : read_states;
-signal hit: std_logic := '0';
-signal valid: std_logic := '0';
-signal dirty: std_logic := '0';
+signal state, next_state: read_states;
 
---mem signals, should be handled by mem_controller
-signal m_waitrequest: std_logic := '0';
-signal m_writedata: std_logic_vector(7 downto 0);
-signal m_readdata: std_logic_vector(7 downto 0);
-signal m_write: std_logic := '0';
-signal m_read: std_logic := '0';
+signal tag: std_logic_vector(2 downto 0); --remaining bits up to 15th
+signal index: std_logic_vector(4 downto 0); --next 5 bits
+signal offset: std_logic_vector(6 downto 0); --Last 7 bits of address
+signal cache_block: std_logic_vector(127 downto 0);
 
-signal cache_index: integer;
-signal temp_data: std_logic_vector(127 downto 0);
-
+signal valid: std_logic;
+signal dirty: std_logic;
 
 BEGIN
-
 
 read_fsm : process(clock, reset)
-variable offset: integer := 0;
+--variable tag: std_logic_vector(2 downto 0); --remaining bits up to 15th
+--variable index: std_logic_vector(4 downto 0); --next 5 bits
+--variable offset: std_logic_vector(6 downto 0); --Last 7 bits of address
+--variable cache_block: std_logic_vector(127 downto 0);
+--variable valid: std_logic;
+--variable dirty: std_logic;
+
 BEGIN
     if (reset ='1') then
-        state <= I;
+        next_state <= I;
     elsif (rising_edge(clock)) then
         case state is
             when I =>
                 if (s_read = '1') then             
-                    state <= R;
+                    next_state <= R;
                 end if;
             when R =>
                 s_waitrequest <= '1';
-                if (hit = '1') then
-                    if (valid = '1') then
-                        state <= D;
+
+                offset <= s_addr(6 downto 0); 
+                index <= s_addr(11 downto 7); 
+                tag <= s_addr(14 downto 12);
+                cache_block <= cache_array(to_integer(unsigned(index)));
+
+                valid <= cache_block(48); 
+                dirty <= cache_block(47);
+
+                --check validity
+                if(valid = '1') then
+                    --check for cache hit
+                    if (cache_block(46 downto 44) = tag) then
+                        --Hit
+                        next_state <= D;
+                    else
+                        --Miss
+                        --if dirty, write cache block to mem then fetch block from memory
+                        if (dirty = '1') then
+                            next_state <= MW;
+                        else
+                        --if clean, directly fetch from memory
+                            next_state <= MR;
+                        end if;
                     end if;
                 else
-                    if (valid = '1') then
-                        if (dirty = '1') then
-                            state <= MW;
-                        else
-                            state <= MR;
-                        end if;
-                    else
-                        state <= MR;
-                    end if;
+                    --if invalid, then fetch block from memory
+                    next_state <= MR;
                 end if;
             when D =>
-                --not too sure about this part
-                offset := to_integer(unsigned(s_addr(6 downto 0)));
-                s_readdata <= cache_array(cache_index)(offset+32 downto offset);
+                --when done, load cache_block into readdata output
+                s_readdata <= cache_block(31 downto 0);
                 s_waitrequest <= '0';
-                state <= I;
+                next_state <= I;
             when MW =>
-                m_writedata <= temp_data(7 downto 0);
+                --if write to mem is needed, set m_write and put data on m_writedata
+
                 m_write <= '1';
-                --not too sure about which byte to send
-                if (m_waitrequest = '1') then
-                    state <= MW;
+                m_read <= '0';
+                m_writedata <= cache_block(31 downto 0);
+
+                --wait for mem_controller to have written
+                if (mem_controller_wait = '1') then
+                    next_state <= MW;
                 else
+                    --write is done
                     m_write <= '0';
-                    state <= MR;
+                    cache_block(47) <= '0'; --reset dirty bit
+                    next_state <= MR;
                 end if;
             when MR =>
+                --if read from mem is necessary, set m_read
                 m_read <= '1';
-                if (m_waitrequest = '1') then
+                m_write <= '0';
+
+                --wait for mem_controller
+                if (mem_controller_wait = '1') then
                     state <= MR;
                 else
+                    --put data read from mem into cache_block
                     m_read <= '0';
+                    cache_block(31 downto 0) <= m_readdata;
                     state <= RP;
                 end if;
+            --replace cache_block into cache_array
             when RP =>
-                cache_array(cache_index)(7 downto 0) <= m_readdata;
+                --set valid bit
+                cache_block(48) <= '1';
+                --cache block is now clean
+                cache_block(47) <= '0';
+                cache_block(46 downto 44) <= tag;
+                cache_block(43 downto 39) <= index;
+                --put new block into array
+                cache_array(to_integer(unsigned(index))) <= cache_block;
                 state <= D;
         end case;
     end if;
 END process read_fsm;
-
-
-compare : process(clock)
-BEGIN
-    if (state = R) then
-        For i in 0 to 31 LOOP
-            if (cache_array(i)(125 downto 123) = s_addr(15 downto 13)) then
-                hit <= '1';
-                dirty <= cache_array(i)(126);
-                valid <= cache_array(i)(127);
-                --temp_data <= cache_array(i);
-                cache_index <= i;
-            end if;
-        END LOOP;
-    end if;
-
-END process compare;
 
 END arch;
