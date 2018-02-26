@@ -15,8 +15,8 @@ entity read_controller is
     --"internal" signals interfacing with mem_controller
     mem_controller_data: inout std_logic_vector(127 downto 0);
     mem_controller_addr: out std_logic_vector(14 downto 0);
-    m_read : out std_logic;
-    m_write: out std_logic;
+    mem_controller_read : out std_logic;
+    mem_controller_write: out std_logic;
     mem_controller_wait: in std_logic
     );
 end read_controller;
@@ -93,8 +93,8 @@ BEGIN
             when MW =>
                 --if write to mem is needed, set m_write and put data on m_writedata
 
-                m_write <= '1';
-                m_read <= '0';
+                mem_controller_write <= '1';
+                mem_controller_read <= '0';
                 mem_controller_data <= cache_block(127 downto 0);
                 mem_controller_addr(14 downto 9) <= cache_block(133 downto 128);
                 mem_controller_addr(8 downto 4) <= index;
@@ -105,21 +105,21 @@ BEGIN
                     next_state <= MW;
                 else
                     --write is done
-                    m_write <= '0';
+                    mem_controller_write <= '0';
                     cache_block(134) <= '0'; --reset dirty bit
                     next_state <= MR;
                 end if;
             when MR =>
                 --if read from mem is necessary, set m_read
-                m_read <= '1';
-                m_write <= '0';
+                mem_controller_read <= '1';
+                mem_controller_write <= '0';
 
                 --wait for mem_controller
                 if (mem_controller_wait = '1') then
                     state <= MR;
                 else
                     --put data read from mem into cache_block
-                    m_read <= '0';
+                    mem_controller_read <= '0';
                     cache_block(127 downto 0) <= mem_controller_data;
                     state <= RP;
                 end if;

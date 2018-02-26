@@ -11,15 +11,15 @@ port(
 	-- INPUT <-> CACHE--
 	s_addr : in std_logic_vector (31 downto 0);
 	s_read : in std_logic;
-	s_write : in std_logic;
+  s_write : in std_logic;
   s_writedata : in std_logic_vector (31 downto 0);
 
-    s_waitrequest : out std_logic;
-    s_readdata : out std_logic_vector (31 downto 0);
+  s_waitrequest : out std_logic;
+  s_readdata : out std_logic_vector (31 downto 0);
 
-    --CACHE<->MEM
-    m_readdata : in std_logic_vector (7 downto 0);
-    m_waitrequest : in std_logic;
+  --CACHE<->MEM
+  m_readdata : in std_logic_vector (7 downto 0);
+  m_waitrequest : in std_logic;
 
 	m_addr : out integer range 0 to ram_size-1;
 	m_read : out std_logic;
@@ -32,12 +32,19 @@ architecture arch of cache is
 
 -- declare signals here
 component read_controller port(
-    clock : in std_logic;
-    reset : in std_logic;
-    s_addr: in std_logic_vector(31 downto 0);
-    s_read : in std_logic;
-    s_readdata : out std_logic_vector (31 downto 0);
-    s_waitrequest : out std_logic
+  clock : in std_logic;
+  reset : in std_logic;
+  s_addr: in std_logic_vector(31 downto 0);
+  s_read : in std_logic;
+  s_readdata : out std_logic_vector(31 downto 0);
+  s_waitrequest : out std_logic;
+
+  --"internal" signals interfacing with mem_controller
+  mem_controller_data: inout std_logic_vector(127 downto 0);
+  mem_controller_addr: out std_logic_vector(14 downto 0);
+  mem_controller_read : out std_logic;
+  mem_controller_write: out std_logic;
+  mem_controller_wait: in std_logic
 );
 end component;
 
@@ -52,21 +59,21 @@ component write_controller port(
 end component;
 
 component mem_controller port(
-	clock : in std_logic;
-	reset : in std_logic;
-	mem_controller_read: in std_logic;
-	mem_controller_write: in std_logic;
-	mem_controller_addr : in std_logic_vector (14 downto 0);
+  clock : in std_logic;
+  reset : in std_logic;
+  mem_controller_read: in std_logic;
+  mem_controller_write: in std_logic;
+  mem_controller_addr : in std_logic_vector (14 downto 0);
 
-	mem_controller_data :inout std_logic_vector (127 downto 0);
+  mem_controller_data :inout std_logic_vector (127 downto 0);
 
-	m_waitrequest : in std_logic;
-	m_readdata : in std_logic_vector (7 downto 0);
-	mem_controller_wait: out std_logic;
-	m_addr : out integer range 0 to ram_size-1;
-	m_read : out std_logic;
-	m_write : out std_logic;
-	m_writedata : out std_logic_vector (7 downto 0)
+  m_waitrequest : in std_logic;
+  m_readdata : in std_logic_vector (7 downto 0);
+  mem_controller_wait: out std_logic;
+  m_addr : out integer range 0 to ram_size-1;
+  m_read : out std_logic;
+  m_write : out std_logic;
+  m_writedata : out std_logic_vector (7 downto 0)
 );
 end component;
 
@@ -74,7 +81,7 @@ signal mem_controller_wait: std_logic;
 signal mem_controller_read: std_logic;
 signal mem_controller_write: std_logic;
 signal mem_controller_data: std_logic_vector(127 downto 0);
-signal mem_controller_addr: std_logic_vector(31 downto 0);
+signal mem_controller_addr: std_logic_vector(14 downto 0);
 
 begin
 
@@ -88,7 +95,7 @@ begin
 				mem_controller_read => mem_controller_read,
 				mem_controller_write => mem_controller_write,
 				mem_controller_addr => mem_controller_addr,
-				mem_controller_data => mem_controller_data
+				mem_controller_data => mem_controller_data,
 				mem_controller_wait => mem_controller_wait
      );
 
@@ -98,12 +105,12 @@ begin
          s_addr => s_addr,
          s_write => s_write,
          s_writedata => s_writedata,
-         s_waitrequest => s_waitrequest,
-				 mem_controller_read => mem_controller_read,
-				 mem_controller_write => mem_controller_write,
-				 mem_controller_addr => mem_controller_addr,
-				 mem_controller_data => mem_controller_data
-				 mem_controller_wait => mem_controller_wait
+         s_waitrequest => s_waitrequest
+				 --mem_controller_read => mem_controller_read,
+				 --mem_controller_write => mem_controller_write,
+				 --mem_controller_addr => mem_controller_addr,
+				 --mem_controller_data => mem_controller_data,
+				 --mem_controller_wait => mem_controller_wait
       );
 
       mem_contr: mem_controller PORT MAP(
@@ -118,7 +125,7 @@ begin
           mem_controller_read => mem_controller_read,
           mem_controller_write => mem_controller_write,
           mem_controller_addr => mem_controller_addr,
-					mem_controller_data => mem_controller_data
+					mem_controller_data => mem_controller_data,
           mem_controller_wait => mem_controller_wait
       );
 -- make circuits here
