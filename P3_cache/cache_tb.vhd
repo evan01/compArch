@@ -147,8 +147,9 @@ end procedure;
 
 --WRITE TESTS
 procedure write_match_clean_valid is --FIX ASSERTION
+--No write to mem, dirty bit set internally
 begin
-    --Only difference is that there should be a dirty bit set internally
+    
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_21;
@@ -157,7 +158,7 @@ begin
     ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
     WAIT until s_waitrequest = '0';
 
-    --ASERTION TEST
+    --ASERTION TEST, need to check that dirty bit is set?
     --ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
     s_write <= '0';
@@ -167,6 +168,7 @@ begin
 end procedure;
 
 procedure write_mismatch_clean_valid is --FIX ASSERTION
+--No write to memory, because data is clean
 begin
     --To set up this test you need to read to the cache location, then write to same location with dif tag
     --Just need to write to the same area in the cache twice. (NO WRITES TO MEMORY)
@@ -195,8 +197,9 @@ begin
 end procedure;
 
 procedure write_match_dirty_valid is -- FIX ASSERTION
+-- No write to memory, just overwrite cache data
 begin
-    -- This test requires you to write to the same place twice.
+    --Just write to the cache twice for this to happen
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_8;
@@ -220,11 +223,20 @@ begin
 end procedure;
 
 procedure write_mismatch_dirty_valid is -- FIX ASSERTION
+--Write old cache val to mem, overwrite cache data
 begin
-    --To set up this test you need to read to the cache location, then write to same location with dif tag
-    --Just need to write to the same area in the cache twice. (MUST WRITE TO MEMORY)
+    --To set up this test you need to read to the cache location, then write to same location
+    --Then you need to write again with a different tag.
     s_read <= '1';
     s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
     s_addr <= (31 downto 15 => '0') & ADDRESS_1;
     WAIT FOR clk_period/2;
     ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
@@ -248,19 +260,24 @@ begin
 end procedure;
 
 --READ TESTS
-procedure seed_memory_with_data is  --Should write to memory and the cache!!!2
+procedure seed_memory_with_data is
+--Should write to memory and the cache!!!2
 begin
     for i in 0 to 30 loop --Write to 30 slots in the cache
-        s_addrr <= std_logic_vector(to_unsigned(5,i)) & "0010000"
+        --s_addr = 17reduntantbits & 3tag bits $ 5 index bits $ 7 offset bits
+        s_addr <= (31 downto 15 => '0') & std_logic_vector(to_unsigned(3,i mod 3))  & std_logic_vector(to_unsigned(5,i)) & "0010000";
         --s_writedata <= --needs a standard logic vector
         WAIT for clk_period/2;
         WAIT until m_waitrequest = '0';
     end loop;
 end procedure;
 
+--MEMORY DUMP FOR TESTING PURPOSES
+
 procedure read_match_clean_valid is 
+--Read directly from cache, no memory access
 begin
-    --STANDARD READ test, place the data in memory first.
+    
     s_read <= '1';
     s_write <= '0';
     s_addr <= (31 downto 15 => '0') & ADDRESS_1; -- Should have
@@ -278,18 +295,35 @@ begin
 end procedure;
 
 procedure read_mismatch_clean_valid is 
+--Replace cache with propper memory, then read from cache
 begin
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1; -- Should have
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
 end procedure;
 
 procedure read_match_dirty_valid is 
+--Read directly from cache, no memory access
 begin
 end procedure;
 
 procedure read_mismatch_dirty_valid is 
+--Write the dirty cache values back to memory, replace cache with propper mem, then read from cache
 begin
 end procedure;
 
-procedure read_match_clean_invalid is --Relevant
+procedure read_match_clean_invalid is
+-- Read from memory into cache, then read from cache
 begin
 end procedure;
 
