@@ -13,8 +13,8 @@ entity read_controller is
     s_waitrequest : out std_logic;
 
     --"internal" signals interfacing with mem_controller
-    m_writedata: out std_logic_vector(127 downto 0);
-    m_readdata: in std_logic_vector(127 downto 0);
+    mem_controller_data: inout std_logic_vector(127 downto 0);
+    mem_controller_addr: out std_logic_vector(14 downto 0);
     m_read : out std_logic;
     m_write: out std_logic;
     mem_controller_wait: in std_logic
@@ -60,8 +60,8 @@ BEGIN
 
                 cache_block <= cache_array(to_integer(unsigned(index)));
 
-                valid <= cache_block(48); 
-                dirty <= cache_block(47);
+                valid <= cache_block(135); 
+                dirty <= cache_block(134);
 
                 --check validity
                 if(valid = '1') then
@@ -86,7 +86,7 @@ BEGIN
             when D =>
                 --when done, load cache_block into readdata output
 
-                int_offset <= to_integer(unsigned(offset));
+                int_offset := to_integer(unsigned(offset));
                 s_readdata <= cache_block(31+int_offset*32 downto 0 + 32*int_offset);
                 s_waitrequest <= '0';
                 next_state <= I;
@@ -95,7 +95,10 @@ BEGIN
 
                 m_write <= '1';
                 m_read <= '0';
-                m_writedata <= cache_block(127 downto 0);
+                mem_controller_data <= cache_block(127 downto 0);
+                mem_controller_addr(14 downto 9) <= cache_block(133 downto 128);
+                mem_controller_addr(8 downto 4) <= index;
+
 
                 --wait for mem_controller to have written
                 if (mem_controller_wait = '1') then
@@ -117,7 +120,7 @@ BEGIN
                 else
                     --put data read from mem into cache_block
                     m_read <= '0';
-                    cache_block(31 downto 0) <= m_readdata;
+                    cache_block(127 downto 0) <= mem_controller_data;
                     state <= RP;
                 end if;
             --replace cache_block into cache_array
@@ -126,8 +129,7 @@ BEGIN
                 cache_block(135) <= '1';
                 --cache block is now clean
                 cache_block(134) <= '0';
-                cache_block(46 downto 44) <= tag;
-                cache_block(43 downto 39) <= index;
+                cache_block(133 downto 128) <= tag;
                 --put new block into array
                 cache_array(to_integer(unsigned(index))) <= cache_block;
                 state <= D;
