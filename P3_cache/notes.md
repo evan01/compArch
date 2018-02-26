@@ -98,3 +98,6 @@ After our first read.
 
 
 
+[0000100010001010] ->This is requesting a word from memory location (0000100010001000)
+
+->We are going to go to 0000100010001000

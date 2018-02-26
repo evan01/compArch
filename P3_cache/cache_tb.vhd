@@ -71,8 +71,8 @@ signal m_waitrequest : std_logic;
 
 -- ADDRESSES AND TEST VALUES. Last 2 bits redundant
 CONSTANT ADDRESS_0 : std_logic_vector(14 downto 0) := "000000000000000";
-CONSTANT ADDRESS_1 : std_logic_vector(14 downto 0) := "111000000001100";
-CONSTANT ADDRESS_2 : std_logic_vector(14 downto 0) := "111000000000000"; --address 2 has the same tag as addr1
+CONSTANT ADDRESS_1 : std_logic_vector(14 downto 0) := "001010100001100";
+CONSTANT ADDRESS_2 : std_logic_vector(14 downto 0) := "101010100000000"; --address 2 has the same INDEX as addr1
 
 CONSTANT DATA_8 : std_logic_vector(31 downto 0) := "00000000000000000000000000001000"; --8
 CONSTANT DATA_21 : std_logic_vector(31 downto 0) := "00000000000000000000000000010101"; --21
@@ -223,7 +223,7 @@ begin
 end procedure;
 
 procedure write_mismatch_dirty_valid is -- FIX ASSERTION
---Write old cache val to mem, overwrite cache data
+--Write old cache val to mem, load new cache value into cache, overwrite cache data
 begin
     --To set up this test you need to read to the cache location, then write to same location
     --Then you need to write again with a different tag.
@@ -297,9 +297,19 @@ end procedure;
 procedure read_mismatch_clean_valid is 
 --Replace cache with propper memory, then read from cache
 begin
+    --Assuming that the wrong block is in the cache...
     s_read <= '1';
     s_write <= '0';
-    s_addr <= (31 downto 15 => '0') & ADDRESS_1; -- Should have
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
     WAIT FOR clk_period/2;
     ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
     WAIT until s_waitrequest = '0';
@@ -312,19 +322,79 @@ begin
     WAIT for clk_period*4;
 end procedure;
 
-procedure read_match_dirty_valid is 
+procedure read_match_dirty_valid is --DONE
 --Read directly from cache, no memory access
 begin
+    --First write to an address in the cache to make a bit dirty
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --Then read from that same adress
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST: Check that the address read back is the right one
+    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
 end procedure;
 
-procedure read_mismatch_dirty_valid is 
+procedure read_mismatch_dirty_valid is  --DONE
 --Write the dirty cache values back to memory, replace cache with propper mem, then read from cache
 begin
+     --First write to an address in the cache to make a section dirty
+    s_read <= '0';
+    s_write <= '1';
+    s_writedata <= DATA_8;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_2;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --Then read from a different address with the same index
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST: Check that the address read back is the right one
+    ASSERT (s_readdata != DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
 end procedure;
 
-procedure read_match_clean_invalid is
+procedure read_match_clean_invalid is --FIGURE OUT ASSERTION.
 -- Read from memory into cache, then read from cache
 begin
+    s_read <= '1';
+    s_write <= '0';
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
+    WAIT FOR clk_period/2;
+    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT until s_waitrequest = '0';
+
+    --ASERTION TEST: Check that the address read back is the right one
+    ASSERT (s_readdata != DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    s_read <= '0';
+    s_write <= '0';
+    reset <= '1';
+    WAIT for clk_period*4;
+
 end procedure;
 
 begin
