@@ -12,7 +12,7 @@ entity read_controller is
     s_read : in std_logic;
 	s_readdata : out std_logic_vector(31 downto 0);
     s_waitrequest : out std_logic;
-    cache_array: inout cache;
+    cache_array: inout cache_type;
     --"internal" signals interfacing with mem_controller
     mem_controller_data: inout std_logic_vector(127 downto 0);
     mem_controller_addr: out std_logic_vector(14 downto 0);

@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package cache_pkg is
-  type cache is array(31 downto 0) of std_logic_vector(135 downto 0);
+  type cache_type is array(31 downto 0) of std_logic_vector(135 downto 0);
 end package cache_pkg;
 
 library IEEE;
@@ -47,7 +47,7 @@ component read_controller port(
   s_read : in std_logic;
   s_readdata : out std_logic_vector(31 downto 0);
   s_waitrequest : out std_logic;
-
+    cache_array: inout cache_type;
   --"internal" signals interfacing with mem_controller
   mem_controller_data: inout std_logic_vector(127 downto 0);
   mem_controller_addr: out std_logic_vector(14 downto 0);
@@ -63,7 +63,14 @@ component write_controller port(
     s_addr: in std_logic_vector(31 downto 0);
     s_write : in std_logic;
     s_writedata : in std_logic_vector (31 downto 0);
-    s_waitrequest : out std_logic
+    s_waitrequest : out std_logic;
+    cache_array: inout cache_type;
+     --"internal" signals interfacing with mem_controller
+    mem_controller_data: inout std_logic_vector(127 downto 0);
+    mem_controller_addr: out std_logic_vector(14 downto 0);
+    mem_controller_read : out std_logic;
+    mem_controller_write: out std_logic;
+    mem_controller_wait: in std_logic
 );
 end component;
 
@@ -91,7 +98,7 @@ signal mem_controller_read: std_logic;
 signal mem_controller_write: std_logic;
 signal mem_controller_data: std_logic_vector(127 downto 0);
 signal mem_controller_addr: std_logic_vector(14 downto 0);
-
+signal cache_array_signal: cache_type;
 begin
 
     read_contr: read_controller PORT MAP(
@@ -101,6 +108,7 @@ begin
         s_read => s_read,
         s_readdata => s_readdata,
         s_waitrequest => s_waitrequest,
+        cache_array=> cache_array_signal,
 				mem_controller_read => mem_controller_read,
 				mem_controller_write => mem_controller_write,
 				mem_controller_addr => mem_controller_addr,
@@ -114,12 +122,13 @@ begin
          s_addr => s_addr,
          s_write => s_write,
          s_writedata => s_writedata,
-         s_waitrequest => s_waitrequest
-				 --mem_controller_read => mem_controller_read,
-				 --mem_controller_write => mem_controller_write,
-				 --mem_controller_addr => mem_controller_addr,
-				 --mem_controller_data => mem_controller_data,
-				 --mem_controller_wait => mem_controller_wait
+         s_waitrequest => s_waitrequest,
+         cache_array=> cache_array_signal,
+				 mem_controller_read => mem_controller_read,
+				 mem_controller_write => mem_controller_write,
+				 mem_controller_addr => mem_controller_addr,
+				 mem_controller_data => mem_controller_data,
+				 mem_controller_wait => mem_controller_wait
       );
 
       mem_contr: mem_controller PORT MAP(

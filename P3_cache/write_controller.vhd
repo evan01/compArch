@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.cache_pkg.all;
 
 
 entity write_controller is
@@ -11,7 +12,8 @@ entity write_controller is
     s_addr: in std_logic_vector(31 downto 0);
     s_write : in std_logic;
 	s_writedata : in std_logic_vector (31 downto 0);
-    s_waitrequest : out std_logic;
+	s_waitrequest : out std_logic;
+	cache_array: inout cache_type;
     mem_controller_wait: in std_logic;
 	mem_controller_read: out std_logic;
 	mem_controller_write: out std_logic;
@@ -21,8 +23,8 @@ entity write_controller is
 end write_controller;
 
 architecture arch of write_controller is
-TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(135 DOWNTO 0);
-signal cache_array: CACHE;
+-- TYPE CACHE IS ARRAY(31 downto 0) OF STD_LOGIC_VECTOR(135 DOWNTO 0);
+-- signal cache_array: CACHE;
 
 
 type  read_states is (idle, W, mem_write, mem_read, write_cache);  -- Define the states
@@ -54,7 +56,6 @@ BEGIN
             end if;
 
 			when W =>
-				
 				tag <= s_addr(14 downto 9);
 				index <= s_addr(8 downto 4);
 				offset <= s_addr(3 downto 0);
