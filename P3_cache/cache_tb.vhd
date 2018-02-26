@@ -68,6 +68,8 @@ signal m_write : std_logic;
 signal m_writedata : std_logic_vector (7 downto 0);
 signal m_waitrequest : std_logic;
 
+signal error_signal: std_logic;
+
 
 -- ADDRESSES AND TEST VALUES. Last 2 bits redundant
 CONSTANT ADDRESS_0 : std_logic_vector(14 downto 0) := "000000000000000";
@@ -126,22 +128,34 @@ test_process : process
 
 procedure sanityTestRW is --DONE
 begin
+    --Do a blank write to the cache
     s_addr <= (31 downto 15 => '0') & ADDRESS_0;
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_8;
     WAIT FOR clk_period/2;
-    ASSERT (s_waitrequest = '1') REPORT "Wait request sould be set high" SEVERITY ERROR;
+    if(s_waitrequest = '0' ) then
+        REPORT "1 >> Wait request sould be set high" SEVERITY ERROR;
+        error_signal <= '1';
+    end if;
+    
     WAIT until s_waitrequest = '0';
+
+    --Then read from the cache the thing we just wrote
     s_read <= '1';
     s_write <= '0';
-    WAIT FOR clk_period;
-    ASSERT (s_waitrequest = '1') REPORT "Wait request should be set high" SEVERITY ERROR;
+    WAIT FOR clk_period*2;
+    if(s_waitrequest = '0' ) then
+        REPORT "2 >> Wait request sould be set high" SEVERITY ERROR;
+        error_signal <= '1';
+    end if;
     WAIT until s_waitrequest = '0';
-    ASSERT (s_readdata = DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
-    s_read <= '0';
-    s_write <= '1';
-    ASSERT (s_waitrequest = '0') REPORT "Wait request should be set low" SEVERITY ERROR;
+     if(s_readdata /= DATA_8) then
+        REPORT "3 >> Cache returned the incorrect read data" SEVERITY ERROR;
+        error_signal <= '1';
+    end if;
+    
+    reset<= '1';
     WAIT for clk_period*4;
 end procedure;
 

@@ -1,0 +1,324 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/Users/Evan/Documents/mcgill/compArch/P3_cache
+Ecache
+Z0 w1519669943
+Z1 DPx4 work 9 cache_pkg 0 22 >5lm8e01FQ3FMRU3hU2]20
+Z2 DPx4 ieee 11 numeric_std 0 22 :ASDNFgHXf_ih3J@9F3Ze1
+Z3 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z4 DPx4 ieee 14 std_logic_1164 0 22 eNV`TJ_GofJTzYa?f<@Oe1
+Z5 dC:/Users/Evan/Documents/mcgill/compArch
+Z6 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache.vhd
+Z7 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache.vhd
+l0
+L14
+Vk7JCkGEJMSBG1CJ9R8kgV0
+!s100 ]JV2d_fB>RUYOM2PTJfkO1
+Z8 OV;C;10.5c;63
+32
+Z9 !s110 1519671146
+!i10b 1
+Z10 !s108 1519671146.000000
+Z11 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache.vhd|
+Z12 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache.vhd|
+!i113 1
+Z13 o-work work -2002 -explicit
+Z14 tExplicit 1 CvgOpt 0
+Aarch
+R1
+R2
+R3
+R4
+DEx4 work 5 cache 0 22 k7JCkGEJMSBG1CJ9R8kgV0
+l105
+L40
+Vn[I1loDNXI:o:I9akKk1T0
+!s100 e5VT;OV<U@WTl^[KKX2:90
+R8
+32
+R9
+!i10b 1
+R10
+R11
+R12
+!i113 1
+R13
+R14
+Pcache_pkg
+R3
+R4
+R0
+R5
+R6
+R7
+l0
+L4
+V>5lm8e01FQ3FMRU3hU2]20
+!s100 <]EH>MU54G2GUH4kVf]aV0
+R8
+32
+R9
+!i10b 1
+R10
+R11
+R12
+!i113 1
+R13
+R14
+Ecache_tb
+Z15 w1519671127
+R2
+R3
+R4
+R5
+Z16 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd
+Z17 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd
+l0
+L5
+V7E4^229J[_6oaW@8H^^z00
+!s100 N8hTJD?ado=UI;TQE4:Ql3
+R8
+32
+R9
+!i10b 1
+R10
+Z18 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd|
+Z19 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd|
+!i113 1
+R13
+R14
+Abehavior
+R2
+R3
+R4
+DEx4 work 8 cache_tb 0 22 7E4^229J[_6oaW@8H^^z00
+l82
+L8
+Vb`L<6n@M6]z[_jKaMJZhn2
+!s100 0k9hVbhlKeEn]L@S_72II1
+R8
+32
+R9
+!i10b 1
+R10
+R18
+R19
+!i113 1
+R13
+R14
+Emem_controller
+Z20 w1519667703
+R2
+R3
+R4
+R5
+Z21 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd
+Z22 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd
+l0
+L5
+Vb8@oE;1U09Bl84AJ_bTL@2
+!s100 _=a<FODkKa0CFlVQJRCWZ0
+R8
+32
+R9
+!i10b 1
+R10
+Z23 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd|
+Z24 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd|
+!i113 1
+R13
+R14
+Aarch
+R2
+R3
+R4
+DEx4 work 14 mem_controller 0 22 b8@oE;1U09Bl84AJ_bTL@2
+l30
+L26
+V6Zi4Udc75mBN2=WA<3dR80
+!s100 <bHHWO0PY;mVR]`ADDB4e3
+R8
+32
+R9
+!i10b 1
+R10
+R23
+R24
+!i113 1
+R13
+R14
+Ememory
+Z25 w1519253169
+R2
+R3
+R4
+R5
+Z26 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd
+Z27 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd
+l0
+L6
+V3LP4`=ezmehUVN:f8HSal1
+!s100 TL`MNK5NTn0=f?i`Ph2JS3
+R8
+32
+Z28 !s110 1519671147
+!i10b 1
+R10
+Z29 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd|
+Z30 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd|
+!i113 1
+R13
+R14
+Artl
+R2
+R3
+R4
+DEx4 work 6 memory 0 22 3LP4`=ezmehUVN:f8HSal1
+l29
+L23
+VRGS>@C^TliVBWJiQY=8il2
+!s100 Fl5=Y6J][VGa6l_6YBKG33
+R8
+32
+R28
+!i10b 1
+R10
+R29
+R30
+!i113 1
+R13
+R14
+Ememory_tb
+R25
+R2
+R3
+R4
+R5
+Z31 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd
+Z32 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd
+l0
+L5
+V_kiS2gc@klE4Vk3RdCF4^2
+!s100 K:h_7;_e46:2;TAj@4dAB3
+R8
+32
+R28
+!i10b 1
+Z33 !s108 1519671147.000000
+Z34 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd|
+Z35 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd|
+!i113 1
+R13
+R14
+Abehaviour
+R2
+R3
+R4
+DEx4 work 9 memory_tb 0 22 _kiS2gc@klE4Vk3RdCF4^2
+l38
+L8
+VAIIG6V5IXNH>AnecMF_ib3
+!s100 :i96VH_8DL4G91ZkR7MdH1
+R8
+32
+R28
+!i10b 1
+R33
+R34
+R35
+!i113 1
+R13
+R14
+Eread_controller
+Z36 w1519670096
+R1
+R2
+R3
+R4
+R5
+Z37 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/read_controller.vhd
+Z38 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/read_controller.vhd
+l0
+L6
+V?hgQU1X1g4RbKjk5IW[X62
+!s100 j=VbAE_9em5@BzWXm7S:o3
+R8
+32
+R28
+!i10b 1
+R33
+Z39 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/read_controller.vhd|
+Z40 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/read_controller.vhd|
+!i113 1
+R13
+R14
+Aarch
+R1
+R2
+R3
+R4
+DEx4 work 15 read_controller 0 22 ?hgQU1X1g4RbKjk5IW[X62
+l41
+L25
+VgkEj]N90F6XOG1Bzi5dR?1
+!s100 1cdPLUoAkS>3]jc6<6amL1
+R8
+32
+R28
+!i10b 1
+R33
+R39
+R40
+!i113 1
+R13
+R14
+Ewrite_controller
+Z41 w1519669988
+R1
+R2
+R3
+R4
+R5
+Z42 8C:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd
+Z43 FC:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd
+l0
+L6
+VmLF5n`2WCkSJMilfhB5Y@0
+!s100 7WYK:i@LS^c4]6ODggKXU2
+R8
+32
+R28
+!i10b 1
+R33
+Z44 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd|
+Z45 !s107 C:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd|
+!i113 1
+R13
+R14
+Aarch
+R1
+R2
+R3
+R4
+Z46 DEx4 work 16 write_controller 0 22 mLF5n`2WCkSJMilfhB5Y@0
+l42
+L24
+Z47 V[@MkCV0:C1>cY]gYzB68=0
+Z48 !s100 <>6[iN5^E?@14NA2J0YSP2
+R8
+32
+R28
+!i10b 1
+R33
+R44
+R45
+!i113 1
+R13
+R14
