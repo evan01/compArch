@@ -371,7 +371,7 @@ begin
     WAIT until s_waitrequest = '0';
 
     --ASERTION TEST: Check that the address read back is the right one
-    ASSERT (s_readdata != DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    ASSERT (s_readdata /= DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
     s_write <= '0';
     reset <= '1';
@@ -389,7 +389,7 @@ begin
     WAIT until s_waitrequest = '0';
 
     --ASERTION TEST: Check that the address read back is the right one
-    ASSERT (s_readdata != DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
+    ASSERT (s_readdata /= DATA_8) REPORT "Cache returned the incorrect read data" SEVERITY ERROR;
     s_read <= '0';
     s_write <= '0';
     reset <= '1';

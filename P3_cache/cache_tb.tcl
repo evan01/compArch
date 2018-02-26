@@ -18,10 +18,10 @@ proc AddWaves {} {
 vlib work
 
 ;# Compile components if any
+vcom cache.vhd
 vcom mem_controller.vhd
 vcom read_controller.vhd
 vcom write_controller.vhd
-vcom cache.vhd
 vcom cache_tb.vhd
 
 ;# Start simulation

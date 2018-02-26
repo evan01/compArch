@@ -3,7 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.cache_pkg.all;
 
-
 entity write_controller is
     generic( ram_size : INTEGER := 32768);
     port(
@@ -18,7 +17,7 @@ entity write_controller is
 	mem_controller_read: out std_logic;
 	mem_controller_write: out std_logic;
 	mem_controller_data: inout std_logic_vector(127 downto 0);
-	mem_controller_addr: out std_logic_vector(31 downto 0)
+	mem_controller_addr: out std_logic_vector(14 downto 0)
     );
 end write_controller;
 
@@ -97,7 +96,7 @@ BEGIN
 				mem_controller_read <= '0';
 					
 				--Send details to mem controller
-				mem_controller_addr <= "00000000000000000"&tag & index & offset;
+				mem_controller_addr <= tag & index & offset;
 				mem_controller_data <= cache_row(127 downto 0);
 
 				--Only go to mem_read state if already written old cache data (CHECK IF OLD CACHE DATA)
@@ -118,7 +117,7 @@ BEGIN
 				mem_controller_read <= '1';
 					
 				--Send details to mem controller
-				mem_controller_addr <= "00000000000000000"&tag & index & offset;
+				mem_controller_addr <= tag & index & offset;
 
 
 				--Only go to mem_read state
