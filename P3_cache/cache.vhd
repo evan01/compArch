@@ -42,8 +42,8 @@ component read_controller port(
   --"internal" signals interfacing with mem_controller
   mem_controller_data: inout std_logic_vector(127 downto 0);
   mem_controller_addr: out std_logic_vector(14 downto 0);
-  m_read : out std_logic;
-  m_write: out std_logic;
+  mem_controller_read : out std_logic;
+  mem_controller_write: out std_logic;
   mem_controller_wait: in std_logic
 );
 end component;
@@ -105,12 +105,12 @@ begin
          s_addr => s_addr,
          s_write => s_write,
          s_writedata => s_writedata,
-         s_waitrequest => s_waitrequest,
-				 mem_controller_read => mem_controller_read,
-				 mem_controller_write => mem_controller_write,
-				 mem_controller_addr => mem_controller_addr,
-				 mem_controller_data => mem_controller_data,
-				 mem_controller_wait => mem_controller_wait
+         s_waitrequest => s_waitrequest
+				 --mem_controller_read => mem_controller_read,
+				 --mem_controller_write => mem_controller_write,
+				 --mem_controller_addr => mem_controller_addr,
+				 --mem_controller_data => mem_controller_data,
+				 --mem_controller_wait => mem_controller_wait
       );
 
       mem_contr: mem_controller PORT MAP(
