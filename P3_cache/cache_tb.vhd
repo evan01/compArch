@@ -129,11 +129,11 @@ test_process : process
 procedure sanityTestRW is --DONE
 begin
     --Do a blank write to the cache
-    s_addr <= (31 downto 15 => '0') & ADDRESS_0;
+    s_addr <= (31 downto 15 => '0') & ADDRESS_1;
     s_read <= '0';
     s_write <= '1';
     s_writedata <= DATA_8;
-    WAIT FOR clk_period/2;
+    WAIT FOR clk_period;
     if(s_waitrequest = '0' ) then
         REPORT "1 >> Wait request sould be set high" SEVERITY ERROR;
         error_signal <= '1';

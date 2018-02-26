@@ -7,16 +7,18 @@ generic( ram_size : INTEGER := 32768);
 port(
 		clock : in std_logic;
 		reset : in std_logic;
-    mem_controller_read: in std_logic;
-    mem_controller_write: in std_logic;
-    mem_controller_addr : in std_logic_vector (14 downto 0);
-
+        mem_controller_read: in std_logic;
+        mem_controller_write: in std_logic;
+        mem_controller_addr : in std_logic_vector (14 downto 0);
 		mem_controller_data :inout std_logic_vector (127 downto 0);
-
 		m_waitrequest : in std_logic;
-		m_readdata : in std_logic_vector (7 downto 0);
-    mem_controller_wait: out std_logic;
-    m_addr : out integer range 0 to ram_size-1;
+        m_readdata : in std_logic_vector (7 downto 0);
+        
+        --This goes to both the read and write controller
+        mem_controller_wait: out std_logic;
+        
+        --These go towards the main memory
+        m_addr : out integer range 0 to ram_size-1;
 		m_read : out std_logic;
 		m_write : out std_logic;
 		m_writedata : out std_logic_vector (7 downto 0)

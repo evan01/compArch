@@ -26,13 +26,13 @@ architecture arch of write_controller is
 -- signal cache_array: CACHE;
 
 
-type  read_states is (idle, W, mem_write, mem_read, write_cache);  -- Define the states
+type  read_states is (I, W, MW, MR, WC);  -- Define the states
 signal state : read_states;
 
 signal tag: std_logic_vector(5 downto 0); --remaining bits up to 15th
 signal index: std_logic_vector(4 downto 0); --next 5 bits
 signal offset: std_logic_vector(3 downto 0); --Last 4 bits of address - 2 last
-signal cache_row : std_logic_vector(135 downto 0);
+signal cache_row : std_logic_vector(135 downto 0) := (others => '0');
 signal m_waitrequest: std_logic := '0';
 signal temp_data: std_logic_vector(127 downto 0);
 signal new_cache_addr : std_logic_vector(31 downto 0);
@@ -45,10 +45,10 @@ write_fsm : process(clock, reset)
     variable count :integer := 0;
 BEGIN
     if (reset ='1') then
-        state <= idle;
+        state <= I;
     elsif (rising_edge(clock)) then
         case state is
-            when idle =>
+            when I =>
 			  if (s_write = '1') then 
 			  	s_waitrequest <= '1';
 				state <= W;
@@ -65,34 +65,37 @@ BEGIN
 				
 				--Figure out if there is a match
 				if cache_row(133 downto 128) = tag then
-					state <= write_cache; --There is a match
+					state <= WC; --There is a match
 				else
 					--Check if dirty or not
 					if(cache_row(134) = '1') then
 						--Then it is dirty, write to mem, then read correct block, then  write to cache
-						state <= mem_write; --No match
+						state <= MW; --No match
 					else
 						--Not dirty, so read the correct block to cache, then write
-						state <= mem_read;
+						state <= MR;
 					end if;
 				end if;
 
 		    -- The location needed for the write is available in the cache
-		    when write_cache =>
+		    when WC =>
 			
-			   -- Write the data and tag and set the valid and the dirty bit
-			   --cache_row(to_integer(unsigned(offset)) * 32 + 31) downto (to_integer(unsigned(offset))*32)) <= s_writedata(31 downto 0);	
-			   cache_row(block_number*32+31 downto block_number*32 )<= s_writedata;
-			   
-			   --Set data,valid and tag
-			   cache_row(134) <= '1';
-			   cache_row(135) <= '1';
-			   cache_row(133 downto 128) <= tag;
-			
-				state <= idle;
+				-- Write the data and tag and set the valid and the dirty bit
+				--cache_row(to_integer(unsigned(offset)) * 32 + 31) downto (to_integer(unsigned(offset))*32)) <= s_writedata(31 downto 0);	
+				cache_row(block_number*32+31 downto block_number*32 )<= s_writedata;
+				
+				--Set data,valid and tag
+				cache_row(134) <= '1';
+				cache_row(135) <= '1';
+				cache_row(133 downto 128) <= tag;
+				
+				--Place whole block back in cache.
+				cache_array(to_integer(unsigned(index))) <= cache_row;
+
+				state <= I;
 				s_waitrequest <= '0';
 			   
-			when mem_write =>
+			when MW =>
 				--Tell the mem controller we want to write
 				mem_controller_write <= '1';
 				mem_controller_read <= '0';
@@ -105,14 +108,14 @@ BEGIN
 				if(mem_controller_wait = '0' and mem_rw_requested ='1') then 
 					mem_controller_write <= '0';
 					mem_controller_read <= '0';
-					state <= mem_read;
+					state <= MR;
 					mem_rw_requested <= '0';
 				else
 					mem_rw_requested <= '1';
 				end if;
 			      
 
-			when mem_read =>
+			when MR =>
 				--reads a block into the cache from memorty
 				--Tell the mem controller we want to write
 				mem_controller_write <= '0';
@@ -121,9 +124,8 @@ BEGIN
 				--Send details to mem controller
 				mem_controller_addr <= tag & index & offset;
 
-
 				--Only go to mem_read state
-				if(mem_controller_wait = '0'and mem_rw_requested='1') then 
+				if(mem_controller_wait = '0' and mem_rw_requested = '1') then 
 					mem_controller_write <= '0';
 					mem_controller_read <= '0';
 					
@@ -131,7 +133,7 @@ BEGIN
 					cache_row(133 downto 128) <= tag;
 					cache_row(135 downto 134) <= "11"; --dirty and valid
 					cache_row(127 downto 0) <= mem_controller_data;
-					state <= write_cache;
+					state <= WC;
 					mem_rw_requested <= '0';
 				else
 					mem_rw_requested <= '1';

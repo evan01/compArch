@@ -93,14 +93,28 @@ component mem_controller port(
 );
 end component;
 
-signal mem_controller_wait: std_logic;
 signal mem_controller_read: std_logic;
 signal mem_controller_write: std_logic;
 signal mem_controller_data: std_logic_vector(127 downto 0);
 signal mem_controller_addr: std_logic_vector(14 downto 0);
-signal cache_array_signal: cache_type;
-signal read_wait: std_logic:= '0';
-signal write_wait: std_logic:= '0';
+signal mem_controller_wait: std_logic;
+signal cache_array_signal: cache_type := ((others => (others => '0')));
+
+--Special Read Signals
+signal read_wait: std_logic:= '0'; --tells the cpu that controller is busy
+signal rc_mem_write : std_logic:='0'; --tells the memcontroller that readC wants to write
+signal rc_mem_read : std_logic:='0'; --tells the memcontroller that readC wants to read
+signal rc_mem_data: std_logic_vector(127 downto 0);
+signal rc_mem_addr: std_logic_vector(14 downto 0);
+signal rc_mem_wait: std_logic;
+
+--Special Write Signals
+signal write_wait: std_logic:= '0'; --tells the cpu that controller is busy
+signal wc_mem_write : std_logic:='0';--tells the memcontroller that writeC wants to write
+signal wc_mem_read : std_logic:='0';--tells the memcontroller that writeC wants to read
+signal wc_mem_data: std_logic_vector(127 downto 0);
+signal wc_mem_addr: std_logic_vector(14 downto 0);
+signal wc_mem_wait: std_logic;
 
 begin
 
@@ -112,11 +126,11 @@ begin
         s_readdata => s_readdata,
         s_waitrequest => read_wait,
         cache_array=> cache_array_signal,
-				mem_controller_read => mem_controller_read,
-				mem_controller_write => mem_controller_write,
-				mem_controller_addr => mem_controller_addr,
-				mem_controller_data => mem_controller_data,
-				mem_controller_wait => mem_controller_wait
+				mem_controller_read => rc_mem_read,
+				mem_controller_write => rc_mem_write,
+				mem_controller_addr => rc_mem_addr,
+				mem_controller_data => rc_mem_data,
+				mem_controller_wait => rc_mem_wait
      );
 
      write_contr: write_controller PORT MAP(
@@ -127,11 +141,11 @@ begin
          s_writedata => s_writedata,
          s_waitrequest => write_wait,
          cache_array=> cache_array_signal,
-				 mem_controller_read => mem_controller_read,
-				 mem_controller_write => mem_controller_write,
-				 mem_controller_addr => mem_controller_addr,
-				 mem_controller_data => mem_controller_data,
-				 mem_controller_wait => mem_controller_wait
+				 mem_controller_read => wc_mem_read,
+				 mem_controller_write => wc_mem_write,
+				 mem_controller_addr => wc_mem_addr,
+				 mem_controller_data => wc_mem_data,
+				 mem_controller_wait => wc_mem_wait
       );
 
       mem_contr: mem_controller PORT MAP(
@@ -143,12 +157,18 @@ begin
           m_write => m_write,
           m_writedata => m_writedata,
           m_waitrequest => m_waitrequest,
-          mem_controller_read => mem_controller_read,
+          mem_controller_read =>  mem_controller_read,
           mem_controller_write => mem_controller_write,
           mem_controller_addr => mem_controller_addr,
 					mem_controller_data => mem_controller_data,
           mem_controller_wait => mem_controller_wait
       );
 -- make circuits here
+    mem_controller_read <= rc_mem_read or wc_mem_read; 
+    mem_controller_write <= rc_mem_write or wc_mem_write;
+    mem_controller_data <= rc_mem_data or wc_mem_data;
+    mem_controller_addr <= rc_mem_addr or wc_mem_addr;
+    mem_controller_wait <= rc_mem_wait or wc_mem_wait;
     s_waitrequest <= read_wait or write_wait;
+
 end arch;
