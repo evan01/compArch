@@ -93,11 +93,11 @@ component mem_controller port(
 );
 end component;
 
-signal mem_controller_read: std_logic;
-signal mem_controller_write: std_logic;
+signal mem_controller_read: std_logic := '0';
+signal mem_controller_write: std_logic := '0';
 signal mem_controller_data: std_logic_vector(127 downto 0);
 signal mem_controller_addr: std_logic_vector(14 downto 0);
-signal mem_controller_wait: std_logic;
+signal mem_controller_wait: std_logic := '0';
 signal cache_array_signal: cache_type := ((others => (others => '0')));
 
 --Special Read Signals
@@ -164,11 +164,11 @@ begin
           mem_controller_wait => mem_controller_wait
       );
 -- make circuits here
-    mem_controller_read <= rc_mem_read or wc_mem_read; 
-    mem_controller_write <= rc_mem_write or wc_mem_write;
-    mem_controller_data <= rc_mem_data or wc_mem_data;
-    mem_controller_addr <= rc_mem_addr or wc_mem_addr;
-    mem_controller_wait <= rc_mem_wait or wc_mem_wait;
+    mem_controller_read <= rc_mem_read when s_read='1' else wc_mem_read; 
+    mem_controller_write <= rc_mem_write when s_read='1' else wc_mem_write;
+    mem_controller_data <= rc_mem_data when s_read='1' else wc_mem_data;
+    mem_controller_addr <= rc_mem_addr when s_read='1' else wc_mem_addr;
+    mem_controller_wait <= rc_mem_wait when s_read='1' else wc_mem_wait;
     s_waitrequest <= read_wait or write_wait;
 
 end arch;

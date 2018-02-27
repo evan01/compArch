@@ -1,13 +1,4 @@
-C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 23 2017
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Loading package NUMERIC_STD
--- Compiling entity cache_tb
--- Compiling architecture behavior of cache_tb
-
-} {} {}} C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd
+C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 23 2017
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -16,17 +7,24 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 2
 -- Compiling entity memory
 -- Compiling architecture rtl of memory
 
-} {} {}} C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd {2 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd
+} {} {}} C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/cache_tb.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 23 2017
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
 -- Loading package NUMERIC_STD
--- Compiling entity mem_controller
--- Compiling architecture arch of mem_controller
-** Warning: C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd(35): (vcom-1013) Initial value of "var_mem_index" depends on value of signal "mem_index".
-** Warning: C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd(36): (vcom-1013) Initial value of "var_mem_controller_data" depends on value of signal "mem_controller_data".
-** Warning: C:/Users/Evan/Documents/mcgill/compArch/P3_cache/mem_controller.vhd(73): (vcom-1272) Length of expected is 9; length of actual is 8.
+-- Compiling entity cache_tb
+-- Compiling architecture behavior of cache_tb
+
+} {} {}} C:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/write_controller.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 23 2017
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package cache_pkg
+-- Compiling entity write_controller
+-- Compiling architecture arch of write_controller
 
 } {} {}} C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Evan/Documents/mcgill/compArch/P3_cache/memory_tb.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5c Compiler 2017.01 Jan 23 2017

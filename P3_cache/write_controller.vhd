@@ -54,7 +54,8 @@ BEGIN
 				state <= W;
 				else
 					s_waitrequest <= '0';
-            end if;
+				end if;
+				mem_controller_addr <= (others => '-');
 
 			when W =>
 				tag <= s_addr(14 downto 9);
@@ -126,7 +127,6 @@ BEGIN
 
 				--Only go to mem_read state
 				if(mem_controller_wait = '0' and mem_rw_requested = '1') then 
-					mem_controller_write <= '0';
 					mem_controller_read <= '0';
 					
 					--Write the new block to cache

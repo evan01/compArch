@@ -1,7 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /cache_tb/error_signal
 add wave -noupdate -divider CPU
+add wave -noupdate /cache_tb/error_signal
 add wave -noupdate /cache_tb/clk
 add wave -noupdate -radix binary /cache_tb/s_addr
 add wave -noupdate /cache_tb/s_waitrequest
@@ -10,6 +10,8 @@ add wave -noupdate /cache_tb/s_write
 add wave -noupdate -radix unsigned /cache_tb/s_readdata
 add wave -noupdate -radix unsigned /cache_tb/s_writedata
 add wave -noupdate /cache_tb/reset
+TreeUpdate [SetDefaultTree]
+quietly WaveActivateNextPane
 add wave -noupdate -divider READ_CONTROLLER
 add wave -noupdate -label READ_STATE /cache_tb/dut/read_contr/state
 add wave -noupdate -label CPU_WAIT /cache_tb/dut/read_contr/s_waitrequest
@@ -19,6 +21,8 @@ add wave -noupdate -label OFFSET /cache_tb/dut/read_contr/offset
 add wave -noupdate -label {CACHE ROW} /cache_tb/dut/read_contr/cache_block
 add wave -noupdate -radix hexadecimal /cache_tb/dut/read_contr/s_addr
 add wave -noupdate -label READ_DATA -radix hexadecimal /cache_tb/dut/read_contr/s_readdata
+TreeUpdate [SetDefaultTree]
+quietly WaveActivateNextPane
 add wave -noupdate -divider WRITE_CONTROLLER
 add wave -noupdate -label WRITE_STATE /cache_tb/dut/write_contr/state
 add wave -noupdate -label CPU_WAIT /cache_tb/dut/write_contr/s_waitrequest
@@ -33,10 +37,24 @@ add wave -noupdate -label MEM_READ /cache_tb/dut/mem_contr/mem_controller_read
 add wave -noupdate -label MEM_WRITE /cache_tb/dut/mem_contr/mem_controller_write
 TreeUpdate [SetDefaultTree]
 quietly WaveActivateNextPane
-add wave -noupdate -divider {CACHE MEMORY}
-add wave -noupdate -radix unsigned -childformat {{/cache_tb/dut/read_contr/cache_array(31) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(30) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(29) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(28) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(27) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(26) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(25) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(24) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(23) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(22) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(21) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(20) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(19) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(18) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(17) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(16) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(15) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(14) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(13) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(12) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(11) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(10) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(9) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(8) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(7) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(6) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(5) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(4) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(3) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(2) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(1) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(0) -radix unsigned}} -expand -subitemconfig {/cache_tb/dut/read_contr/cache_array(31) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(30) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(29) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(28) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(27) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(26) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(25) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(24) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(23) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(22) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(21) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(20) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(19) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(18) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(17) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(16) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(15) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(14) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(13) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(12) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(11) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(10) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(9) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(8) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(7) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(6) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(5) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(4) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(3) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(2) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(1) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(0) {-radix unsigned}} /cache_tb/dut/read_contr/cache_array
+add wave -noupdate -divider {MEMORY CONTROLLER}
+add wave -noupdate /cache_tb/dut/mem_contr/mem_controller_data
+add wave -noupdate -divider Inputs
+add wave -noupdate /cache_tb/dut/mem_contr/mem_controller_read
+add wave -noupdate /cache_tb/dut/mem_contr/mem_controller_write
+add wave -noupdate /cache_tb/dut/mem_contr/mem_controller_addr
+add wave -noupdate -divider Outputs
+add wave -noupdate /cache_tb/dut/mem_contr/mem_controller_wait
+add wave -noupdate /cache_tb/dut/mem_contr/m_addr
+add wave -noupdate /cache_tb/dut/mem_contr/m_read
+add wave -noupdate /cache_tb/dut/mem_contr/m_write
+add wave -noupdate /cache_tb/dut/mem_contr/m_writedata
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2807 ps} 0}
+quietly WaveActivateNextPane
+add wave -noupdate -divider {CACHE MEMORY}
+add wave -noupdate -radix unsigned -childformat {{/cache_tb/dut/read_contr/cache_array(31) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(30) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(29) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(28) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(27) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(26) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(25) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(24) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(23) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(22) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(21) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(20) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(19) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(18) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(17) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(16) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(15) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(14) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(13) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(12) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(11) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(10) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(9) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(8) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(7) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(6) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(5) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(4) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(3) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(2) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(1) -radix unsigned} {/cache_tb/dut/read_contr/cache_array(0) -radix unsigned}} -subitemconfig {/cache_tb/dut/read_contr/cache_array(31) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(30) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(29) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(28) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(27) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(26) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(25) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(24) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(23) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(22) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(21) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(20) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(19) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(18) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(17) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(16) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(15) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(14) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(13) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(12) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(11) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(10) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(9) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(8) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(7) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(6) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(5) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(4) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(3) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(2) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(1) {-radix unsigned} /cache_tb/dut/read_contr/cache_array(0) {-radix unsigned}} /cache_tb/dut/read_contr/cache_array
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {5065 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 224
 configure wave -valuecolwidth 206

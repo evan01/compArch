@@ -55,6 +55,7 @@ BEGIN
                 else
                      s_waitrequest <= '0';
                 end if;
+                mem_controller_addr <= (others => '-');
                
             when R =>
           
