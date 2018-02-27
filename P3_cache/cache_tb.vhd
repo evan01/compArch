@@ -52,7 +52,7 @@ end component;
 -- test signals
 signal reset : std_logic := '0';
 signal clk : std_logic := '0';
-constant clk_period : time := 1 ns;
+constant clk_period : time := 2 ns;
 
 signal s_addr : std_logic_vector (31 downto 0);
 signal s_read : std_logic;
