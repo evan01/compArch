@@ -12,20 +12,12 @@ proc AddWaves {} {
     add wave -position end sim:/cache_tb/m_write
     add wave -position end sim:/cache_tb/m_writedata
     add wave -position end sim:/cache_tb/m_waitrequest
-    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_read
-    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_write
-    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_addr
-    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_wait
-    add wave -position end  sim:/cache_tb/dut/mem_contr/state
 }
 
 vlib work
 
 ;# Compile components if any
 vcom cache.vhd
-vcom mem_controller.vhd
-vcom read_controller.vhd
-vcom write_controller.vhd
 vcom memory.vhd
 vcom memory_tb.vhd
 vcom cache_tb.vhd

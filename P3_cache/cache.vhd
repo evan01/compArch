@@ -1,191 +1,216 @@
 library ieee;
 use ieee.std_logic_1164.all;
-
-package cache_pkg is
-  type cache_type is array(31 downto 0) of std_logic_vector(135 downto 0);
-end package cache_pkg;
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
-use work.cache_pkg.all;
-
 entity cache is
-generic( ram_size : INTEGER := 32768);
+generic(
+	ram_size : INTEGER := 32768
+);
 port(
 	clock : in std_logic;
 	reset : in std_logic;
 
-	-- INPUT <-> CACHE--
+	-- Avalon interface --
 	s_addr : in std_logic_vector (31 downto 0);
 	s_read : in std_logic;
-  s_write : in std_logic;
-  s_writedata : in std_logic_vector (31 downto 0);
-
-  s_waitrequest : out std_logic;
-  s_readdata : out std_logic_vector (31 downto 0);
-
-  --CACHE<->MEM
-  m_readdata : in std_logic_vector (7 downto 0);
-  m_waitrequest : in std_logic;
+	s_readdata : out std_logic_vector (31 downto 0);
+	s_write : in std_logic;
+	s_writedata : in std_logic_vector (31 downto 0);
+	s_waitrequest : out std_logic;
 
 	m_addr : out integer range 0 to ram_size-1;
 	m_read : out std_logic;
+	m_readdata : in std_logic_vector (7 downto 0);
 	m_write : out std_logic;
-	m_writedata : out std_logic_vector (7 downto 0)
+	m_writedata : out std_logic_vector (7 downto 0);
+	m_waitrequest : in std_logic
 );
 end cache;
 
 architecture arch of cache is
-
--- declare signals here
-component read_controller port(
-  clock : in std_logic;
-  reset : in std_logic;
-  s_addr: in std_logic_vector(31 downto 0);
-  s_read : in std_logic;
-  s_readdata : out std_logic_vector(31 downto 0);
-  s_waitrequest : out std_logic;
-    cache_array: inout cache_type;
-  --"internal" signals interfacing with mem_controller
-  mem_controller_data: inout std_logic_vector(127 downto 0);
-  mem_controller_addr: out std_logic_vector(14 downto 0);
-  mem_controller_read : out std_logic;
-  mem_controller_write: out std_logic;
-  mem_controller_wait: in std_logic
-);
-end component;
-
-component write_controller port(
-    clock : in std_logic;
-    reset : in std_logic;
-    s_addr: in std_logic_vector(31 downto 0);
-    s_write : in std_logic;
-    s_writedata : in std_logic_vector (31 downto 0);
-    s_waitrequest : out std_logic;
-    cache_array: inout cache_type;
-     --"internal" signals interfacing with mem_controller
-    mem_controller_data: inout std_logic_vector(127 downto 0);
-    mem_controller_addr: out std_logic_vector(14 downto 0);
-    mem_controller_read : out std_logic;
-    mem_controller_write: out std_logic;
-    mem_controller_wait: in std_logic
-);
-end component;
-
-component mem_controller port(
-  clock : in std_logic;
-  reset : in std_logic;
-  mem_controller_read: in std_logic;
-  mem_controller_write: in std_logic;
-  mem_controller_addr : in std_logic_vector (14 downto 0);
-
-  mem_controller_data :inout std_logic_vector (127 downto 0);
-
-  m_waitrequest : in std_logic;
-  m_readdata : in std_logic_vector (7 downto 0);
-  mem_controller_wait: out std_logic;
-  m_addr : out integer range 0 to ram_size-1;
-  m_read : out std_logic;
-  m_write : out std_logic;
-  m_writedata : out std_logic_vector (7 downto 0)
-);
-end component;
-
---Signals that interface with the memory controller
-signal m_controller_read: std_logic := '0';
-signal m_controller_write: std_logic := '0';
-signal m_controller_data: std_logic_vector(127 downto 0);
-signal m_controller_addr: std_logic_vector(14 downto 0);
-signal m_controller_wait: std_logic := '0';
-signal cache_array_signal: cache_type := ((others => (others => '0')));
-
---Special Read Signals
-signal read_wait: std_logic:= '0'; --tells the cpu that controller is busy
-signal rc_mem_write : std_logic:='0'; --tells the memcontroller that readC wants to write
-signal rc_mem_read : std_logic:='0'; --tells the memcontroller that readC wants to read
-signal rc_mem_data: std_logic_vector(127 downto 0);
-signal rc_mem_addr: std_logic_vector(14 downto 0);
-signal rc_mem_wait: std_logic := '0';
-
---Special Write Signals
-signal write_wait: std_logic:= '0'; --tells the cpu that controller is busy
-signal wc_mem_write : std_logic:='0';--tells the memcontroller that writeC wants to write
-signal wc_mem_read : std_logic:='0';--tells the memcontroller that writeC wants to read
-signal wc_mem_data: std_logic_vector(127 downto 0);
-signal wc_mem_addr: std_logic_vector(14 downto 0);
-signal wc_mem_wait: std_logic:='0';
+  type  CACHE_STATES is (I, R, W, MR, MW, MWAIT);  -- Define the states
+  signal state : CACHE_STATES := I;
+  
+  --Our cache
+  type cache_array_type is array(31 downto 0) of std_logic_vector(135 downto 0);
+  signal cache_array: cache_array_type;
+  
+  signal cache_block: std_logic_vector(135 downto 0):= (others => '0');
+  signal block_byte_index: integer :=0;
+  signal has_waited : std_logic := '0';
+  signal last_state: CACHE_STATES := I;
 
 begin
 
-    read_contr: read_controller PORT MAP(
-        clock => clock,
-        reset => reset,
-        s_addr => s_addr,
-        s_read => s_read,
-        s_readdata => s_readdata,
-        s_waitrequest => read_wait,
-        cache_array=> cache_array_signal,
-				mem_controller_read => rc_mem_read,
-				mem_controller_write => rc_mem_write,
-				mem_controller_addr => rc_mem_addr,
-				mem_controller_data => rc_mem_data,
-				mem_controller_wait => m_controller_wait
-     );
+cache : process(clock, reset)
+  variable tag: std_logic_vector(5 downto 0); --remaining bits up to 15th
+  variable index: std_logic_vector(4 downto 0); --next 5 bits
+  variable offset: std_logic_vector(1 downto 0); --Last 4 bits of address - 2 last
+  variable var_cache_block: std_logic_vector(135 downto 0) := cache_block;
+  variable var_block_byte_index: integer := block_byte_index; -- Tracks which mem byte we are reading or writing
+  variable valid : std_logic;
+  variable dirty : std_logic;
+begin
+  if (reset = '1') then
+    state <= I;
+    cache_array <= (others => (others => '0'));
+    var_cache_block := (others => '0');
+    tag := (others => '0');
+    index := (others => '0');
+    offset := (others => '0');
+    valid := '0';
+    dirty := '0';
+    last_state <= I;
+    var_block_byte_index := 0;
+    has_waited := 0;
+  elsif(rising_edge(clock)) then
+    case state is
+      when I =>
+        if (s_read = '1') then
+          s_waitrequest <= '1';
+          state <= R;
+        elsif (s_write = '1') then
+          s_waitrequest <= '1';
+          state <= W;
+        else
+          s_waitrequest <= '0';
+          state <= I;
+        end if;
+      when R =>
+        offset := s_addr(3 downto 2);
+        index := s_addr(8 downto 4);
+        tag := s_addr(14 downto 9);
 
-     write_contr: write_controller PORT MAP(
-         clock => clock,
-         reset => reset,
-         s_addr => s_addr,
-         s_write => s_write,
-         s_writedata => s_writedata,
-         s_waitrequest => write_wait,
-         cache_array=> cache_array_signal,
-				 mem_controller_read => wc_mem_read,
-				 mem_controller_write => wc_mem_write,
-				 mem_controller_addr => wc_mem_addr,
-				 mem_controller_data => wc_mem_data,
-				 mem_controller_wait => m_controller_wait
-      );
+        var_cache_block := cache_array(to_integer(unsigned(index)))(135 downto 0);
 
-      mem_contr: mem_controller PORT MAP(
-          clock => clock,
-          reset => reset,
-          m_addr => m_addr,
-          m_read => m_read,
-          m_readdata => m_readdata,
-          m_write => m_write,
-          m_writedata => m_writedata,
-          m_waitrequest => m_waitrequest,
-          mem_controller_read =>  m_controller_read,
-          mem_controller_write => m_controller_write,
-          mem_controller_addr => m_controller_addr,
-					mem_controller_data => m_controller_data,
-          mem_controller_wait => m_controller_wait
-      );
-  -- A proces to handle the memory controller multiplexer inputs
-    memory_multiplexer_proc: process (clock)
-    begin
-    if (rising_edge(clock)) then
-      if(reset = '1') then
-        m_controller_read <= '0';
-        m_controller_write <= '0';
-      elsif(s_read='1') then
-        m_controller_read <= rc_mem_read; 
-        m_controller_write <= rc_mem_write;
-        m_controller_data <= rc_mem_data;
-        m_controller_addr <= rc_mem_addr;
-      else
-        m_controller_read <= wc_mem_read; 
-        m_controller_write <= wc_mem_write;
-        m_controller_data <= wc_mem_data;
-        m_controller_addr <= wc_mem_addr;
-      end if;
-      
-      --mem_controller_wait <= rc_mem_wait or wc_mem_wait;
-      s_waitrequest <= read_wait or write_wait;
-    end if;
-    end process;
+        valid := var_cache_block(135);
+        dirty := var_cache_block(134);
+
+        --check validity
+        if(valid = '1') then
+            --check for cache hit
+            if (var_cache_block(133 downto 128) = tag) then --Hit
+                s_readdata <= var_cache_block(31 + to_integer(unsigned(offset)) * 32 downto 0 + 32 * to_integer(unsigned(offset)));
+                s_waitrequest <= '0';
+                state <= I;
+            else
+                --Miss
+              if (dirty = '1') then
+                --if dirty, write cache block to mem then fetch block from memory
+                last_state <= R;
+                state <= MW;
+              else
+                --if clean, directly fetch from memory
+                last_state <= R;    
+                state <= MR;
+              end if;
+            end if;
+        else
+            --if invalid, then fetch block from memory
+          last_state <= R;  
+          state <= MR;
+        end if;
+      when W =>
+        offset := s_addr(3 downto 2);
+        index := s_addr(8 downto 4);
+        tag := s_addr(14 downto 9);
+        var_cache_block := cache_array(to_integer(unsigned(index)));
+        valid := var_cache_block(135);
+        dirty := var_cache_block(134);
+
+        if(valid = '1') then --the block we want to write to, is maybe in the cache
+           if (var_cache_block(133 downto 128) = tag) then --HIT
+               -- Write to the correct word in cache block
+              var_cache_block(31 + to_integer(unsigned(offset)) * 32 downto 0 + 32 * to_integer(unsigned(offset))) := s_writedata;
+
+              --Set dirty, valid and tag
+              var_cache_block(134) := '1'; --dirty
+              var_cache_block(133 downto 128) := tag;
+              
+              --Place whole block back in cache.
+              cache_array(to_integer(unsigned(index))) <= var_cache_block;
+
+              state <= I;
+              s_waitrequest <= '0';
+           else
+               --Miss
+               --if dirty, write cache block to mem then fetch block from memory
+               if (dirty = '1') then
+                  last_state <= W;
+                  state <= MW;
+               else
+               --if clean, directly fetch from memory
+                  last_state <= W;
+                  state <= MR;
+               end if;
+           end if;
+       else
+          --if invalid, then fetch block from memory
+          last_state <= W;
+          state <= MR;
+       end if;
+
+      when MW =>
+        --Need to write 16 bytes to the cache, our cache block
+        m_write <= '1';
+        m_addr <= to_integer(unsigned(std_logic_vector'(var_cache_block(133 downto 123) & "0000"))) + var_block_byte_index;
+        m_writedata <= cache_block((var_block_byte_index*8 + 7) downto var_block_byte_index*8);
+        
+        var_block_byte_index := var_block_byte_index + 1;
+        
+        if(var_block_byte_index >= 16) then 
+          --We're done writing block, set 
+          var_block_byte_index := 0;
+          m_write <= '0';
+          state <= MR;
+        end if;
+      when MR =>
+        if(var_block_byte_index < 16) then
+          -- We aren't done reading
+          if (has_waited = '0') then
+            -- We haven't requested the data yet
+            m_addr <= to_integer(unsigned(std_logic_vector'(s_addr(14 downto 4) & "0000"))) + var_block_byte_index;
+            m_read <= '1';
+            state <= MWAIT;
+          else
+            -- We've requested the data, it's available
+            m_read <= '0';
+            var_cache_block((var_block_byte_index*8 + 7) downto var_block_byte_index*8) := m_readdata;
+            var_block_byte_index := var_block_byte_index + 1;
+            has_waited <= '0';
+          end if;
+        else
+          --We are done reading
+          m_read <= '0';
+          var_block_byte_index := 0;
+          has_waited <= '0';
+
+          --update dirty bit, valid, and tag
+          var_cache_block(134) := '0';
+          var_cache_block(135) := '1';          
+          var_cache_block(133 downto 128) := tag;
+          
+          --Place whole block back in cache.
+          index := s_addr(8 downto 4);
+          cache_array(to_integer(unsigned(index))) <= var_cache_block;
+
+          state <= last_state;
+        end if;
+      when MWAIT =>
+        if (m_waitrequest = '0') then
+          -- The memory data is ready, set waited and return to mem read
+          has_waited <= '1';
+          state <= MR;
+        end if;
+    end case;
+
+  end if;
+
+  cache_block <= var_cache_block;
+  block_byte_index <= var_block_byte_index;
+
+end process cache;
+
+
 
 end arch;
