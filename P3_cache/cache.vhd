@@ -30,11 +30,14 @@ end cache;
 architecture arch of cache is
   type  CACHE_STATES is (I, R, W, MR, MW, MWAIT);  -- Define the states
   signal state : CACHE_STATES := I;
+  
+  --Our cache
+  type cache_array_type is array(31 downto 0) of std_logic_vector(135 downto 0);
+  signal cache_array: cache_array_type;
+  
   signal cache_block: std_logic_vector(135 downto 0):= (others => '0');
   signal block_byte_index: integer :=0;
   signal has_waited : std_logic := '0';
-  type cache_array_type is array(31 downto 0) of std_logic_vector(135 downto 0);
-  signal cache_array: cache_array_type;
   signal last_state: CACHE_STATES := I;
 
 begin
@@ -44,16 +47,26 @@ cache : process(clock, reset)
   variable index: std_logic_vector(4 downto 0); --next 5 bits
   variable offset: std_logic_vector(1 downto 0); --Last 4 bits of address - 2 last
   variable var_cache_block: std_logic_vector(135 downto 0) := cache_block;
-  variable var_block_byte_index: integer := block_byte_index;
+  variable var_block_byte_index: integer := block_byte_index; -- Tracks which mem byte we are reading or writing
   variable valid : std_logic;
   variable dirty : std_logic;
 begin
   if (reset = '1') then
     state <= I;
+    cache_array <= (others => (others => '0'));
+    var_cache_block := (others => '0');
+    tag := (others => '0');
+    index := (others => '0');
+    offset := (others => '0');
+    valid := '0';
+    dirty := '0';
+    last_state <= I;
+    var_block_byte_index := 0;
+    has_waited := 0;
   elsif(rising_edge(clock)) then
     case state is
       when I =>
-        if (s_read = '1') then --xor this
+        if (s_read = '1') then
           s_waitrequest <= '1';
           state <= R;
         elsif (s_write = '1') then
@@ -133,6 +146,7 @@ begin
            end if;
        else
           --if invalid, then fetch block from memory
+          last_state <= W;
           state <= MR;
        end if;
 
@@ -152,15 +166,16 @@ begin
         end if;
       when MR =>
         if(var_block_byte_index < 16) then
+          -- We aren't done reading
           if (has_waited = '0') then
             -- We haven't requested the data yet
             m_addr <= to_integer(unsigned(std_logic_vector'(s_addr(14 downto 4) & "0000"))) + var_block_byte_index;
             m_read <= '1';
             state <= MWAIT;
           else
-            -- The data is available
+            -- We've requested the data, it's available
             m_read <= '0';
-            cache_block((var_block_byte_index*8 + 7) downto var_block_byte_index*8) <= m_readdata;
+            var_cache_block((var_block_byte_index*8 + 7) downto var_block_byte_index*8) := m_readdata;
             var_block_byte_index := var_block_byte_index + 1;
             has_waited <= '0';
           end if;
@@ -169,9 +184,12 @@ begin
           m_read <= '0';
           var_block_byte_index := 0;
           has_waited <= '0';
-          var_cache_block(134) := '0'; --dirty bit is now clean
-          var_cache_block(135) := '1'; --data is valid
 
+          --update dirty bit, valid, and tag
+          var_cache_block(134) := '0';
+          var_cache_block(135) := '1';          
+          var_cache_block(133 downto 128) := tag;
+          
           --Place whole block back in cache.
           index := s_addr(8 downto 4);
           cache_array(to_integer(unsigned(index))) <= var_cache_block;
@@ -180,6 +198,7 @@ begin
         end if;
       when MWAIT =>
         if (m_waitrequest = '0') then
+          -- The memory data is ready, set waited and return to mem read
           has_waited <= '1';
           state <= MR;
         end if;
