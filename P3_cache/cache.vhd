@@ -32,6 +32,7 @@ architecture arch of cache is
   signal state : CACHE_STATES := I;
   signal cache_block: std_logic_vector(135 downto 0):= (others => '0');
   signal block_byte_index: integer :=0;
+  signal has_waited : std_logic := 0;
   type cache_array is array(31 downto 0) of std_logic_vector(135 downto 0);
   signal last_state: CACHE_STATES := I;
 
@@ -130,25 +131,6 @@ begin
            state <= MR;
        end if;
 
-      when MR =>
-        m_read <= '1';
-        m_addr <= to_integer(unsigned(s_addr(14 downto 4) & "0000")) + var_block_byte_index;
-        
-        if(var_block_byte_index < 16) then
-          
-        else
-          --We are done reading
-          state <= last_state;
-          m_read <= '0';
-          var_block_byte_index := 0;
-        end if;
-        
-        state <= MWAIT;
-
-
-
-
-
       when MW =>
         --Need to write 16 bytes to the cache, our cache block
         m_write <= '1';
@@ -163,9 +145,32 @@ begin
           m_write <= '0';
           state <= MR;
         end if;
-
+      when MR =>
+        if(var_block_byte_index < 16) then
+          if (has_waited = '0') then
+            -- We haven't requested the data yet
+            m_addr <= to_integer(unsigned(s_addr(14 downto 4) & "0000")) + var_block_byte_index;
+            m_read <= '1';
+            state <= MWAIT;
+          else
+            -- The data is available
+            m_read <= '0';
+            cache_block((var_block_byte_index*8 + 7) downto var_block_byte_index*8) <= m_readdata;
+            var_block_byte_index := var_block_byte_index + 1;
+            has_waited := '0';
+          end if;
+        else
+          --We are done reading
+          state <= last_state;
+          m_read <= '0';
+          var_block_byte_index := 0;
+          has_waited = '0';
+        end if;
       when MWAIT =>
-        if ()
+        if (m_waitrequest = 0) then
+          has_waited = '1';
+          state <= MR;
+        end if;
     end case;
 
   end if;
