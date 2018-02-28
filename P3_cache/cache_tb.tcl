@@ -12,6 +12,11 @@ proc AddWaves {} {
     add wave -position end sim:/cache_tb/m_write
     add wave -position end sim:/cache_tb/m_writedata
     add wave -position end sim:/cache_tb/m_waitrequest
+    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_read
+    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_write
+    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_addr
+    add wave -position end  sim:/cache_tb/dut/mem_contr/mem_controller_wait
+    add wave -position end  sim:/cache_tb/dut/mem_contr/state
 }
 
 vlib work
@@ -32,4 +37,4 @@ vsim cache_tb
 AddWaves
 
 ;# Run for 50 ns
-run 300ns
+run 1000ns
