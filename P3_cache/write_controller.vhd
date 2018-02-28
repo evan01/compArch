@@ -81,7 +81,7 @@ BEGIN
 				end if;
 
 		    -- The location needed for the write is available in the cache
-		    when WC =>
+		    when WC => --WRITES 1 BLOCK to cache
 			
 				-- Write the data and tag and set the valid and the dirty bit
 				--cache_row(to_integer(unsigned(offset)) * 32 + 31) downto (to_integer(unsigned(offset))*32)) <= s_writedata(31 downto 0);	
@@ -122,20 +122,17 @@ BEGIN
 
 			when MR =>
 				--reads a block into the cache from memory
-				mem_controller_write <= '0';
-				mem_controller_read <= '1';
-				mem_controller_addr <= tag & index & offset;
 				
-				if(mem_controller_wait = '0' and mem_rw_requested = '1') then 
-					mem_controller_read <= '0';
-					
-					--Write the new block to cache
-					cache_row(133 downto 128) <= tag;
-					cache_row(135 downto 134) <= "11"; --dirty and valid
+				if(mem_rw_requested = '1') then 
+					-- When we get to here, we should ready have the data, just write the block to cache
 					cache_row(127 downto 0) <= mem_controller_data;
 					state <= WC;
+					mem_controller_read <= '0';
 					mem_rw_requested <= '0';
 				else
+					mem_controller_addr <= tag & index & offset;
+					mem_controller_write <= '0';
+					mem_controller_read <= '1';
 					mem_rw_requested <= '1';
 					last_state <= MR;
 					state <= WAIT_CYCLE;
