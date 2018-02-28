@@ -52,46 +52,50 @@ begin
   elsif(rising_edge(clock)) then
     case state is
       when I =>
-        s_waitrequest <= '1';
         if (s_read = '1') then --xor this
+          s_waitrequest <= '1';
           state <= R;
         elsif (s_write = '1') then
+          s_waitrequest <= '1';
           state <= W;
         else
+          s_waitrequest <= '0';
           state <= I;
         end if;
       when R =>
-       offset := s_addr(3 downto 2);
-       index := s_addr(8 downto 4);
-       tag := s_addr(14 downto 9);
+        offset := s_addr(3 downto 2);
+        index := s_addr(8 downto 4);
+        tag := s_addr(14 downto 9);
 
-       var_cache_block := cache_array(to_integer(unsigned(index)));
+        var_cache_block := cache_array(to_integer(unsigned(index)));
 
-       valid := var_cache_block(135);
-       dirty := var_cache_block(134);
+        valid := var_cache_block(135);
+        dirty := var_cache_block(134);
 
-       --check validity
-       if(valid = '1') then
-           --check for cache hit
-           if (var_cache_block(133 downto 128) = tag) then --Hit
-               
-               s_readdata <= var_cache_block(31 + to_integer(unsigned(offset)) * 32 downto 0 + 32 * to_integer(unsigned(offset)));
-               s_waitrequest <= '0';
-               state <= I;
-           else
-               --Miss
-               --if dirty, write cache block to mem then fetch block from memory
-               if (dirty = '1') then
-                   state <= MW;
-               else
-               --if clean, directly fetch from memory
-                   state <= MR;
-               end if;
-           end if;
-       else
-           --if invalid, then fetch block from memory
-           state <= MR;
-       end if;
+        --check validity
+        if(valid = '1') then
+            --check for cache hit
+            if (var_cache_block(133 downto 128) = tag) then --Hit
+                s_readdata <= var_cache_block(31 + to_integer(unsigned(offset)) * 32 downto 0 + 32 * to_integer(unsigned(offset)));
+                s_waitrequest <= '0';
+                state <= I;
+            else
+                --Miss
+              if (dirty = '1') then
+                --if dirty, write cache block to mem then fetch block from memory
+                last_state <= R;
+                state <= MW;
+              else
+                --if clean, directly fetch from memory
+                last_state <= R;    
+                state <= MR;
+              end if;
+            end if;
+        else
+            --if invalid, then fetch block from memory
+          last_state <= R;  
+          state <= MR;
+        end if;
       when W =>
         offset := s_addr(3 downto 2);
         index := s_addr(8 downto 4);
@@ -107,7 +111,6 @@ begin
 
               --Set dirty, valid and tag
               var_cache_block(134) <= '1'; --dirty
-              var_cache_block(135) <= '1'; 
               var_cache_block(133 downto 128) <= tag;
               
               --Place whole block back in cache.
@@ -123,12 +126,13 @@ begin
                   state <= MW;
                else
                --if clean, directly fetch from memory
-                   state <= MR;
+                  last_state <= W;
+                  state <= MR;
                end if;
            end if;
        else
-           --if invalid, then fetch block from memory
-           state <= MR;
+          --if invalid, then fetch block from memory
+          state <= MR;
        end if;
 
       when MW =>
@@ -161,10 +165,17 @@ begin
           end if;
         else
           --We are done reading
-          state <= last_state;
           m_read <= '0';
           var_block_byte_index := 0;
           has_waited = '0';
+          var_cache_block(134) <= '0'; --dirty bit is now clean
+          var_cache_block(135) <= '1'; --data is valid
+
+          --Place whole block back in cache.
+          index := s_addr(8 downto 4);
+          cache_array(to_integer(unsigned(index))) <= var_cache_block;
+
+          state <= last_state;
         end if;
       when MWAIT =>
         if (m_waitrequest = 0) then
