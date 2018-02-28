@@ -93,11 +93,12 @@ component mem_controller port(
 );
 end component;
 
-signal mem_controller_read: std_logic := '0';
-signal mem_controller_write: std_logic := '0';
-signal mem_controller_data: std_logic_vector(127 downto 0);
-signal mem_controller_addr: std_logic_vector(14 downto 0);
-signal mem_controller_wait: std_logic := '0';
+--Signals that interface with the memory controller
+signal m_controller_read: std_logic := '0';
+signal m_controller_write: std_logic := '0';
+signal m_controller_data: std_logic_vector(127 downto 0);
+signal m_controller_addr: std_logic_vector(14 downto 0);
+signal m_controller_wait: std_logic := '0';
 signal cache_array_signal: cache_type := ((others => (others => '0')));
 
 --Special Read Signals
@@ -106,7 +107,7 @@ signal rc_mem_write : std_logic:='0'; --tells the memcontroller that readC wants
 signal rc_mem_read : std_logic:='0'; --tells the memcontroller that readC wants to read
 signal rc_mem_data: std_logic_vector(127 downto 0);
 signal rc_mem_addr: std_logic_vector(14 downto 0);
-signal rc_mem_wait: std_logic;
+signal rc_mem_wait: std_logic := '0';
 
 --Special Write Signals
 signal write_wait: std_logic:= '0'; --tells the cpu that controller is busy
@@ -114,7 +115,7 @@ signal wc_mem_write : std_logic:='0';--tells the memcontroller that writeC wants
 signal wc_mem_read : std_logic:='0';--tells the memcontroller that writeC wants to read
 signal wc_mem_data: std_logic_vector(127 downto 0);
 signal wc_mem_addr: std_logic_vector(14 downto 0);
-signal wc_mem_wait: std_logic;
+signal wc_mem_wait: std_logic:='0';
 
 begin
 
@@ -130,7 +131,7 @@ begin
 				mem_controller_write => rc_mem_write,
 				mem_controller_addr => rc_mem_addr,
 				mem_controller_data => rc_mem_data,
-				mem_controller_wait => rc_mem_wait
+				mem_controller_wait => m_controller_wait
      );
 
      write_contr: write_controller PORT MAP(
@@ -145,7 +146,7 @@ begin
 				 mem_controller_write => wc_mem_write,
 				 mem_controller_addr => wc_mem_addr,
 				 mem_controller_data => wc_mem_data,
-				 mem_controller_wait => wc_mem_wait
+				 mem_controller_wait => m_controller_wait
       );
 
       mem_contr: mem_controller PORT MAP(
@@ -157,18 +158,34 @@ begin
           m_write => m_write,
           m_writedata => m_writedata,
           m_waitrequest => m_waitrequest,
-          mem_controller_read =>  mem_controller_read,
-          mem_controller_write => mem_controller_write,
-          mem_controller_addr => mem_controller_addr,
-					mem_controller_data => mem_controller_data,
-          mem_controller_wait => mem_controller_wait
+          mem_controller_read =>  m_controller_read,
+          mem_controller_write => m_controller_write,
+          mem_controller_addr => m_controller_addr,
+					mem_controller_data => m_controller_data,
+          mem_controller_wait => m_controller_wait
       );
--- make circuits here
-    mem_controller_read <= rc_mem_read when s_read='1' else wc_mem_read; 
-    mem_controller_write <= rc_mem_write when s_read='1' else wc_mem_write;
-    mem_controller_data <= rc_mem_data when s_read='1' else wc_mem_data;
-    mem_controller_addr <= rc_mem_addr when s_read='1' else wc_mem_addr;
-    mem_controller_wait <= rc_mem_wait when s_read='1' else wc_mem_wait;
-    s_waitrequest <= read_wait or write_wait;
+  -- A proces to handle the memory controller multiplexer inputs
+    memory_multiplexer_proc: process (clock)
+    begin
+    if (rising_edge(clock)) then
+      if(reset = '1') then
+        m_controller_read <= '0';
+        m_controller_write <= '0';
+      elsif(s_read='1') then
+        m_controller_read <= rc_mem_read; 
+        m_controller_write <= rc_mem_write;
+        m_controller_data <= rc_mem_data;
+        m_controller_addr <= rc_mem_addr;
+      else
+        m_controller_read <= wc_mem_read; 
+        m_controller_write <= wc_mem_write;
+        m_controller_data <= wc_mem_data;
+        m_controller_addr <= wc_mem_addr;
+      end if;
+      
+      --mem_controller_wait <= rc_mem_wait or wc_mem_wait;
+      s_waitrequest <= read_wait or write_wait;
+    end if;
+    end process;
 
 end arch;

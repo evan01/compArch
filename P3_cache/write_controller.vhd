@@ -26,23 +26,26 @@ architecture arch of write_controller is
 -- signal cache_array: CACHE;
 
 
-type  read_states is (I, W, MW, MR, WC);  -- Define the states
+type  read_states is (I, W, MW, MR, WC, WAIT_CYCLE);  -- Define the states
 signal state : read_states;
 
 signal tag: std_logic_vector(5 downto 0); --remaining bits up to 15th
 signal index: std_logic_vector(4 downto 0); --next 5 bits
 signal offset: std_logic_vector(3 downto 0); --Last 4 bits of address - 2 last
 signal cache_row : std_logic_vector(135 downto 0) := (others => '0');
-signal m_waitrequest: std_logic := '0';
-signal temp_data: std_logic_vector(127 downto 0);
-signal new_cache_addr : std_logic_vector(31 downto 0);
 signal block_number: integer := 0;
 signal mem_rw_requested: std_logic := '0';
+
+--Wait counters setup
+signal last_state: read_states;
+signal wait_counter: integer := 0;
 
 BEGIN
   
 write_fsm : process(clock, reset)
-    variable count :integer := 0;
+	variable count :integer := 0;
+	variable var_wait_counter: integer := wait_counter;
+
 BEGIN
     if (reset ='1') then
         state <= I;
@@ -55,7 +58,6 @@ BEGIN
 				else
 					s_waitrequest <= '0';
 				end if;
-				mem_controller_addr <= (others => '-');
 
 			when W =>
 				tag <= s_addr(14 downto 9);
@@ -106,26 +108,24 @@ BEGIN
 				mem_controller_data <= cache_row(127 downto 0);
 
 				--Only go to mem_read state if already written old cache data (CHECK IF OLD CACHE DATA)
-				if(mem_controller_wait = '0' and mem_rw_requested ='1') then 
+				if(mem_rw_requested = '1' and mem_controller_wait ='0') then
 					mem_controller_write <= '0';
 					mem_controller_read <= '0';
 					state <= MR;
 					mem_rw_requested <= '0';
 				else
+					if(mem_controller_wait ='1') then
 					mem_rw_requested <= '1';
+				end if;
 				end if;
 			      
 
 			when MR =>
-				--reads a block into the cache from memorty
-				--Tell the mem controller we want to write
+				--reads a block into the cache from memory
 				mem_controller_write <= '0';
 				mem_controller_read <= '1';
-					
-				--Send details to mem controller
 				mem_controller_addr <= tag & index & offset;
-
-				--Only go to mem_read state
+				
 				if(mem_controller_wait = '0' and mem_rw_requested = '1') then 
 					mem_controller_read <= '0';
 					
@@ -137,9 +137,18 @@ BEGIN
 					mem_rw_requested <= '0';
 				else
 					mem_rw_requested <= '1';
+					last_state <= MR;
+					state <= WAIT_CYCLE;
+				end if;
+			when WAIT_CYCLE =>
+				if(mem_controller_wait ='0' and wait_counter > 1) then
+					state <= last_state;
+					var_wait_counter := 0;
+				else
+					var_wait_counter := wait_counter + 1;
 				end if;
 		end case;
-
-				end if;
-					end process;
+		wait_counter <= var_wait_counter;			
+	end if;
+end process;
 end arch;

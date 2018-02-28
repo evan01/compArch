@@ -54,9 +54,7 @@ BEGIN
                      s_waitrequest <= '1';
                 else
                      s_waitrequest <= '0';
-                end if;
-                mem_controller_addr <= (others => '-');
-               
+                end if;               
             when R =>
           
                 offset <= s_addr(3 downto 2); 

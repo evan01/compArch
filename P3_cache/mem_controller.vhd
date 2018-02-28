@@ -29,11 +29,13 @@ architecture arch of mem_controller is
 signal mem_index : integer := 0;
 type  mem_states is (I, MR, MW, WAIT_CYCLE);  -- Define the states
 signal state: mem_states := I;
+signal wait_counter: integer :=0;
 signal last_state: mem_states;
 begin
 
 memory_comm : process(clock, reset)
 variable var_mem_index: integer := mem_index;
+variable var_wait_counter: integer := wait_counter;
 variable var_mem_controller_data:  std_logic_vector (127 downto 0) := mem_controller_data;
 
 
@@ -53,58 +55,65 @@ begin
     elsif (rising_edge(clock)) then
         case state is
             when I =>
+                
                 if(mem_controller_read ='1' xor mem_controller_write ='1') then
+                    -- Initialize m_read and m_write
+                    m_read <='-';
+                    m_write <='-';
+
                     --time to do a read or write, leave idle state
                     mem_controller_wait <= '1'; -- Set the mem controller signal to busy
                     var_mem_index := 0;
                     m_addr <= to_integer(unsigned(mem_controller_addr(14 downto 4) & "0000")) + var_mem_index;
                     
                     if(mem_controller_read = '1') then
-                        --We will start reading
-                        m_read <= '1';
-                        m_write <= '0';
-                        last_state <= MR;
-                        state <= WAIT_CYCLE;
+                        state <= MR;
                     else
                         --We will start writing
-                        m_write <= '1';
-                        m_read <= '0';
-                        var_mem_controller_data := mem_controller_data;
-                        m_writedata <= mem_controller_data( 7 downto 0);
+                        -- m_write <= '1';
+                        -- m_read <= '0';
+                        -- var_mem_controller_data := mem_controller_data;
+                        -- m_writedata <= mem_controller_data( 7 downto 0);
                         state <= MW;
                     end if; 
+                else
+                    mem_controller_wait <= '0';
                 end if;
             when WAIT_CYCLE => --Here to instigate a 1 clock period wait. Can extend if needed....
-                if(m_waitrequest'event) then
-                    m_read <= '1'; --Will be set to 1 next state!
+                if(m_waitrequest'event and var_wait_counter > 0) then
                     state <= last_state;
+                    var_wait_counter := 0;
+                elsif (last_state = I and var_wait_counter > 2) then
+                    state<=I;
                 else
                     m_read <= '0';
                     m_write <= '0';
+                    var_wait_counter := var_wait_counter + 1;
                 end if;
                 
             when MR =>
-                if(m_waitrequest = '0' and mem_index < 16) then
-                    
-                    if(mem_index > 0) then
-                        --We will shift our data 8 bits to the right, and read
-                        var_mem_controller_data := std_logic_vector(shift_right(unsigned(var_mem_controller_data), 8));
-                        var_mem_controller_data( 127 downto 120) := m_readdata;
+                if( var_mem_index < 16) then
+                    if(var_mem_index = 0 ) then
+                        m_read<='1';
+                        last_state <= MR;
+                        state <= WAIT_CYCLE;
                     else
-                        --This is our first read, read directly from m_readdata
+                        --We will read first and then shift our data 8 bits to the right, and read
                         var_mem_controller_data( 127 downto 120) := m_readdata;
-                    end if;
-                    
-                   --Update our address
-                    var_mem_index := var_mem_index + 1;
-                    m_addr <= to_integer(unsigned(mem_controller_addr(14 downto 4) & "0000")) + var_mem_index;
+                        var_mem_controller_data := std_logic_vector(shift_right(unsigned(var_mem_controller_data), 8));
 
-                    --Wait a clock cycle, and don't read just yet
-                    last_state <= MR;
-                    state <= WAIT_CYCLE;
-                elsif(mem_index > 16) then
+                        --Wait a clock cycle, and don't read just yet
+                        m_read <= '1';
+                        last_state <= MR;
+                        state <= WAIT_CYCLE;
+                    end if;
+                    m_addr <= to_integer(unsigned(mem_controller_addr(14 downto 4) & "0000")) + var_mem_index;
+                    var_mem_index := var_mem_index + 1;
+                else
                     --We are done!
-                    state <= I;
+                    last_state <= I;
+                    state <= WAIT_CYCLE;
+                    mem_controller_wait <= '0';
                     m_read <='0';
                 end if;
 
@@ -135,6 +144,7 @@ begin
 
         mem_index <= var_mem_index;
         mem_controller_data <= var_mem_controller_data;
+        wait_counter <= var_wait_counter;
     end if;
 
 end process memory_comm;
