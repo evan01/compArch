@@ -62,7 +62,7 @@ begin
     dirty := '0';
     last_state <= I;
     var_block_byte_index := 0;
-    has_waited := 0;
+    has_waited <= '0';
   elsif(rising_edge(clock)) then
     case state is
       when I =>
