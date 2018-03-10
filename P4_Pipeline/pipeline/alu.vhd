@@ -12,6 +12,7 @@ end alu;
 architecture arch of alu is
 
 signal hi, lo : std_logic_vector(31 downto 0);
+signal temp : std_logic_vector(63 downto 0);
 begin
 operation : process(operand_a, operand_b, opcode)
 begin
@@ -27,8 +28,9 @@ begin
       result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
     when "00011" =>
       -- mult
-      hi <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) * to_integer(unsigned(operand_b)), 64))(63 downto 32);
-      lo <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) * to_integer(unsigned(operand_b)), 64))(31 downto 0);
+      temp <=  std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) * to_integer(unsigned(operand_b)), temp'length));
+      hi <= temp(63 downto 32);
+      lo <= temp(31 downto 0);
       result <= lo;
     when "00100" =>
       -- div
@@ -87,7 +89,7 @@ begin
       result <= std_logic_vector(unsigned(operand_a) srl to_integer(unsigned(operand_b)));
     when "10011" =>
       -- sra
-      result <= std_logic_vector(unsigned(operand_a) sra to_integer(unsigned(operand_b)));
+      result <= to_stdlogicvector(to_bitvector(operand_a) sra to_integer(unsigned(operand_b)));
     when "10100" =>
       -- lw
       result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
