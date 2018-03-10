@@ -3,20 +3,28 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity alu is
- Port ( operand_a : in std_logic_vector (31 downto 0);
- operand_b : in std_logic_vector (31 downto 0);
- opcode : in std_logic_vector (4 downto 0);
- result : out std_logic_vector(31 downto 0));
+ port (
+   operand_a : in std_logic_vector (31 downto 0);
+   operand_b : in std_logic_vector (31 downto 0);
+   alu_opcode : in std_logic_vector (4 downto 0);
+   result : out std_logic_vector(31 downto 0);
+   zero: out std_logic
+ );
 end alu;
+
+--Rules
+-- Operand a is always a register
+-- Operand b is a register, offset,  jump address, immediate etc.
+-- Assume that any 16 bit immediate in operand b is always sign extended
 
 architecture arch of alu is
 
 signal hi, lo : std_logic_vector(31 downto 0);
 signal temp : std_logic_vector(63 downto 0);
 begin
-operation : process(operand_a, operand_b, opcode)
+operation : process(operand_a, operand_b, alu_opcode)
 begin
-  case opcode is
+  case alu_opcode is
     when "00000" =>
       -- add
       result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
@@ -65,13 +73,16 @@ begin
       result <= operand_a xor operand_b;
     when "01011" =>
       -- andi
-      result <= operand_a and operand_b;
+      -- Need to zero extend andi according to MIPS data sheet
+      result <= operand_a and ((31 downto 16 => '0') & operand_b(15 downto 0));
     when "01100" =>
       -- ori
-      result <= operand_a and operand_b;
+      -- Need to zero extend ori according to MIPS data sheet
+      result <= operand_a or ((31 downto 16 => '0') & operand_b(12 downto 0));
     when "01101" =>
       -- xori
-      result <= operand_a xor operand_b;
+      -- Need to zero extend xori according to MIPS data sheet
+      result <= operand_a xor ((31 downto 16 => '0') & operand_b(15 downto 0));
     when "01110" =>
       -- mfhi
       result <= hi;
@@ -92,26 +103,35 @@ begin
       result <= to_stdlogicvector(to_bitvector(operand_a) sra to_integer(unsigned(operand_b)));
     when "10100" =>
       -- lw
-      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
+      -- Offset is in operand_b and is sign extended
+      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(signed(operand_b)), result'length));
     when "10101" =>
       -- sw
-      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
+      -- Offset is in operand_b and is sign extended
+      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(signed(operand_b)), result'length));
     when "10110" =>
       -- beq
-      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
+      -- operand_a is pc + 4, operand_b is sign extended offset shifted 2 bits
+      --calculates the branch address
+      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(signed(operand_b) sll 2), result'length));
     when "10111" =>
       -- bne
-      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(unsigned(operand_b)), result'length));
+      -- operand_a is pc + 4, operand_b is sign extended offset shifted 2 bits
+      --calculates the branch address
+      result <= std_logic_vector(to_unsigned(to_integer(unsigned(operand_a)) + to_integer(signed(operand_b) sll 2), result'length));
     when "11000" =>
       -- j
       -- Make sure the current address is in operand a, the 26 bit offset in operand b
+      --Take the 4 msb from the incremented PC address, add to 26 bit offset shifted by 2 bits
       result <= operand_a(31 downto 28) & operand_b(25 downto 0) & "00";
     when "11001" =>
       -- jr
+      -- Jump to address specified in register (operand_a)
       result <= operand_a;
     when "11010" =>
       -- jal
-      -- Make sure the current address is in operand a, the 26 bit offset in operand b
+      -- Make sure the incremented pc address  is in operand a, the 26 bit offset in operand b
+      --Take the 4 msb from the PC address, add to 26 bit offset shifted by 2 bits
       result <= operand_a(31 downto 28) & operand_b(25 downto 0) & "00";
     when others =>
       NULL;
