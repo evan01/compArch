@@ -1,10 +1,10 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 
 entity sign_extender is
-    Port (
-           input_16  : in  STD_LOGIC_VECTOR (15 downto 0);
-           output_32   : out STD_LOGIC_VECTOR (31 downto 0));
+port (
+  input_16  : in  STD_LOGIC_VECTOR (15 downto 0);
+  output_32   : out STD_LOGIC_VECTOR (31 downto 0));
 end sign_extender;
 
 architecture arch of sign_extender is
