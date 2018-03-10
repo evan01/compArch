@@ -38,7 +38,7 @@ end component;
 signal pc_output_address: std_logic_vector(31 downto 0);
 signal pc_input_address: std_logic_vector(31 downto 0);
 signal incremented_pc_address: std_logic_vector(31 downto 0);
-signal branch_address: std_logic_vector(31 downto 0);
+signal branch_target_address: std_logic_vector(31 downto 0);
 signal pc_sel: std_logic;
 ------------------------- IF STAGE -------------------------
 
@@ -55,7 +55,7 @@ begin
   pc_input_mux : mux2to1 PORT MAP(
     sel => pc_sel,
     input_0 => incremented_pc_address,
-    input_1 => branch_address,
+    input_1 => branch_target_address,
     X => pc_input_address
   );
 
