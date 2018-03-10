@@ -1,3 +1,19 @@
-# This Repo contains the code for a Pipelined MIPS Processor
-	-The
-The processor has hazzard detection and port forwardings, and implements a subset of the available MIPS commands.
+# Pipelined MIPS Processor
+
+The processor has hazard detection and forwarding, and implements a subset of the available MIPS commands.
+
+## TODO
+- [ ] ALU
+- [ ] PC
+- [ ] Instruction Memory
+- [ ] CPU Registers
+- [ ] Pipeline Control Unit
+- [ ] ALU Control Unit
+- [ ] Branch Target Computer
+- [ ] ALU Zero module
+- [ ] Data Memory
+- [ ] Pipeline registers
+- [ ] Test bench
+- [ ] Sign Extender
+- [ ] Byte adder
+- [ ] 2 to 1 Mux
