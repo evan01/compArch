@@ -57,6 +57,23 @@ component cpu_registers is
    regread : in std_logic := '0'
  );
 end component;
+
+
+component pipeline_controller is
+ port (
+   instruction : in std_logic_vector (31 downto 0);
+   reg_dst : out std_logic;
+   alu_src :  out std_logic;
+   branch :  out std_logic;
+   mem_read :  out std_logic;
+   mem_write:  out std_logic;
+   reg_write:  out std_logic;
+   mem_to_reg :  out std_logic;
+   alu_opcode : out std_logic_vector (4 downto 0)
+ );
+end component;
+
+
 ------------------------- ID STAGE -------------------------
 
 
