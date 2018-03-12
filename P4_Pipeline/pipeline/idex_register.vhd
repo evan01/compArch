@@ -47,6 +47,7 @@ port (
   -- idex_in_rs_register: in std_logic_vector(31 downto 0);
   -- idex_out_rs_register: out std_logic_vector(31 downto 0);
 
+  -- Need to propagate through rd and rt to determine destination register on certain write instructions
   idex_in_rt_register: in std_logic_vector(31 downto 0);
   idex_out_rt_register: out std_logic_vector(31 downto 0);
 
