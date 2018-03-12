@@ -42,6 +42,24 @@ signal branch_target_address: std_logic_vector(31 downto 0);
 signal pc_sel: std_logic;
 ------------------------- IF STAGE -------------------------
 
+------------------------- ID STAGE -------------------------
+component cpu_registers is
+ port (
+   clk : in std_logic;
+   reset : in std_logic;
+   read_register_1 : in std_logic_vector (4 downto 0);
+   read_register_2 : in std_logic_vector (4 downto 0);
+   write_register : in std_logic_vector (4 downto 0);
+   write_data : in std_logic_vector (31 downto 0);
+   read_data_1 : out std_logic_vector (31 downto 0);
+   read_data_2 : out std_logic_vector (31 downto 0);
+   regwrite : in std_logic := '0';
+   regread : in std_logic := '0'
+ );
+end component;
+------------------------- ID STAGE -------------------------
+
+
 begin
 
 ------------------------- IF STAGE -------------------------
@@ -64,5 +82,11 @@ begin
     output_address => incremented_pc_address
   );
 ------------------------- IF STAGE -------------------------
+
+
+------------------------- ID STAGE -------------------------
+
+------------------------- ID STAGE -------------------------
+
 
 end arch;
