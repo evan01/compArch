@@ -12,6 +12,7 @@ port (
   operand_b : in std_logic_vector(31 downto 0);
   -- The actual alu operation
   alu_opcode : in std_logic_vector (4 downto 0);
+  -- Set to 1 if we want to take branch
   branch_taken : out std_logic := '0'
 );
 end branch_controller;
