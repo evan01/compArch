@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ifid_register is
+entity idex_register is
 port (
   clock: in std_logic;
 
@@ -54,9 +54,9 @@ port (
   idex_in_rd_register: in std_logic_vector(31 downto 0);
   idex_out_rd_register: out std_logic_vector(31 downto 0)
  );
-end ifid_register;
+end idex_register;
 
-architecture arch of ifid_register is
+architecture arch of idex_register is
 begin
 
 reg: process(clock)
