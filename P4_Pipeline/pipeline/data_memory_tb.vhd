@@ -16,7 +16,7 @@ architecture arch of data_memory_tb is
 			clock: in std_logic;
 			memwrite: in std_logic;
 			memread: in std_logic;
-			address: integer;
+			address: in std_logic_vector (31 downto 0);
 			writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 			readdata: out std_logic_vector (31 downto 0)
 			);
@@ -27,7 +27,7 @@ architecture arch of data_memory_tb is
 	constant clk_period : time := 1 ns;
 	signal mwrite: std_logic := '0';
 	signal mread: std_logic := '0';
-	signal address: integer := 0;
+	signal address: std_logic_vector(31 downto 0);
 	signal writedata: std_logic_vector(31 downto 0);
 	signal readdata: std_logic_vector(31 downto 0);
 
@@ -63,7 +63,7 @@ begin
 	begin
 		mwrite <= '1';
 		for i in 0 to 99 loop
-			address <= i;
+			address <= std_logic_vector(to_unsigned(i,address'length));
 			writedata <= std_logic_vector(to_unsigned(i,writedata'length));
 			wait for clk_period;
 		end loop;
@@ -76,7 +76,7 @@ begin
 		mwrite <= '0';
 		mread <= '1';
 		for i in 0 to 99 loop
-			address <= i;
+			address <= std_logic_vector(to_unsigned(i,address'length));
 			wait for clk_period;
 			if(not unsigned(readdata) = i) then
 				report "Error, the memory didn't return the correct instruction";

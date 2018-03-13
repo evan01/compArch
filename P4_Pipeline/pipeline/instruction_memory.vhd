@@ -12,8 +12,8 @@ entity instruction_memory is
 	);
 	port(
 		clock: in std_logic;
-		memwrite: in std_logic;
-		pc : in integer range 0 to 8192-1;
+		memwrite: in std_logic := '0';
+		pc : in std_logic_vector (31 downto 0);
 		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 		instruction_out: out std_logic_vector (31 downto 0)
 	);
@@ -25,7 +25,6 @@ architecture arch of instruction_memory is
 begin
 	mem_proc: process (clock)
 	begin
-		
 		if (now < 1 ps) then --INITIALIZE Memory TO ALL 0's
 			for i in 0 to ram_size-1 loop
 				ram(i) <= std_logic_vector(to_unsigned(0,32));
@@ -35,9 +34,9 @@ begin
 		--Memory logic
 		if(rising_edge(clock)) then
 			if(memwrite ='1') then
-				ram(pc) <= writedata;
+				ram(to_integer(unsigned(pc))) <= writedata;
 			else
-				instruction_out <= ram(pc);
+				instruction_out <= ram(to_integer(unsigned(pc)));
 			end if;
 		end if;
 

@@ -15,7 +15,7 @@ architecture arch of instruction_memory_tb is
 		port(
 			clock: in std_logic;
 			memwrite: in std_logic;
-			pc : in integer range 0 to 8192-1;
+			pc : in std_logic_vector (31 downto 0);
 			writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 			instruction_out: out std_logic_vector (31 downto 0)
 			);
@@ -25,7 +25,7 @@ architecture arch of instruction_memory_tb is
 	signal clk : std_logic := '0';
 	constant clk_period : time := 1 ns;
 	signal mwrite: std_logic := '0';
-	signal pc: integer range 0 to 8192-1;
+	signal pc: std_logic_vector (31 downto 0);
 	signal writedata: std_logic_vector(31 downto 0);
 	signal instruction_out: std_logic_vector(31 downto 0);
 
@@ -60,7 +60,7 @@ begin
 	begin
 		mwrite <= '1';
 		for i in 0 to 99 loop
-			pc <= i;
+			pc <= std_logic_vector(to_unsigned(i,pc'length));
 			writedata <= std_logic_vector(to_unsigned(i,writedata'length));
 			wait for clk_period;
 		end loop;
@@ -72,7 +72,7 @@ begin
 	begin
 		mwrite <= '0';
 		for i in 0 to 99 loop
-			pc <= i;
+			pc <= std_logic_vector(to_unsigned(i,pc'length));
 			wait for clk_period;
 			if(not unsigned(instruction_out) = i) then
 				report "Error, the memory didn't return the correct instruction";

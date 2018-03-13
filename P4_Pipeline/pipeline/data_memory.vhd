@@ -14,7 +14,7 @@ entity data_memory is
 		clock: in std_logic;
 		memwrite: in std_logic;
 		memread: in std_logic;
-		address : in integer;
+		address : in std_logic_vector (31 downto 0);
 		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 		readdata: out std_logic_vector (31 downto 0)
 	);
@@ -36,11 +36,11 @@ begin
 		--Memory logic
 		if(rising_edge(clock)) then
 			if(memwrite ='1') then
-				ram(address) <= writedata;
+				ram(to_integer(unsigned(address))) <= writedata;
 			end if;
 
 			if(memread = '1') then
-				readdata<= ram(address);
+				readdata<= ram(to_integer(unsigned(address)));
 			end if;
 		end if;
 
