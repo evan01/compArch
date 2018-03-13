@@ -23,9 +23,8 @@ port (
   memwb_out_alu_result: out std_logic_vector(31 downto 0);
 
   -- Need to propagate through dest register for write instructions
-  memwb_in_dest_register: in std_logic_vector(31 downto 0);
-  memwb_out_dest_register: out std_logic_vector(31 downto 0)
-
+  memwb_in_dest_register: in std_logic_vector(4 downto 0);
+  memwb_out_dest_register: out std_logic_vector(4 downto 0)
  );
 end memwb_register;
 

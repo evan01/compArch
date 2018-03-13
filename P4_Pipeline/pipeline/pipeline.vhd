@@ -227,7 +227,8 @@ signal mem_mem_write: std_logic;
 signal mem_reg_write: std_logic;
 signal mem_mem_to_reg: std_logic;
 signal mem_alu_result: std_logic_vector(31 downto 0);
-signal mem_mem_write_data: std_logic_vector(31 downto 0);
+signal mem_datamem_write_data: std_logic_vector(31 downto 0);
+signal mem_datamem_read_data: std_logic_vector(31 downto 0);
 signal mem_dst_register: std_logic_vector(4 downto 0);
 
 ----------------------------- END MEM STAGE -----------------------------
@@ -247,8 +248,8 @@ port (
   memwb_in_alu_result: in std_logic_vector(31 downto 0);
   memwb_out_alu_result: out std_logic_vector(31 downto 0);
 
-  memwb_in_dest_register: in std_logic_vector(31 downto 0);
-  memwb_out_dest_register: out std_logic_vector(31 downto 0)
+  memwb_in_dest_register: in std_logic_vector(4 downto 0);
+  memwb_out_dest_register: out std_logic_vector(4 downto 0)
  );
 end component;
 
@@ -257,7 +258,10 @@ end component;
 
 signal wb_reg_write: std_logic;
 signal wb_reg_read: std_logic;
-
+signal wb_mem_to_reg: std_logic;
+signal wb_datamem_read_data: std_logic_vector(31 downto 0);
+signal wb_alu_result: std_logic_vector(31 downto 0);
+signal wb_dst_register: std_logic_vector(4 downto 0);
 ----------------------------- END WB STAGE -----------------------------
 
 
@@ -421,7 +425,7 @@ alu_component: alu PORT MAP(
     exmem_out_alu_result => mem_alu_result,
 
     exmem_in_mem_write_data => ex_reg_read_data_2,
-    exmem_out_mem_write_data => mem_mem_write_data,
+    exmem_out_mem_write_data => mem_datamem_write_data,
 
     exmem_in_dest_register => ex_dst_register,
     exmem_out_dest_register => mem_dst_register
@@ -429,7 +433,34 @@ alu_component: alu PORT MAP(
 
 ----------------------------- MEM STAGE ---------------------------------
 
+  data_mem: data_memory PORT MAP(
+  		clock => clock,
+  		memwrite => mem_mem_write,
+  		memread => mem_mem_read,
+  		address => mem_alu_result,
+  		writedata => mem_datamem_write_data,
+  		readdata => mem_datamem_read_data
+  	);
+
 ----------------------------- END MEM STAGE -----------------------------
+
+  memwb_reg: memwb_register PORT MAP(
+    clock => clock,
+
+    memwb_in_reg_write => mem_reg_write,
+    memwb_out_reg_write => wb_reg_write,
+    memwb_in_mem_to_reg => mem_mem_to_reg,
+    memwb_out_mem_to_reg => wb_mem_to_reg,
+
+    memwb_in_memory_data => mem_datamem_read_data,
+    memwb_out_memory_data => wb_datamem_read_data,
+
+    memwb_in_alu_result => mem_alu_result,
+    memwb_out_alu_result => wb_alu_result,
+
+    memwb_in_dest_register => mem_dst_register,
+    memwb_out_dest_register => wb_dst_register
+ );
 
 ----------------------------- WB STAGE ---------------------------------
 
