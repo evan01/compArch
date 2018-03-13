@@ -7,8 +7,7 @@ entity alu is
    operand_a : in std_logic_vector (31 downto 0);
    operand_b : in std_logic_vector (31 downto 0);
    alu_opcode : in std_logic_vector (4 downto 0);
-   result : out std_logic_vector(31 downto 0);
-   zero: out std_logic
+   result : out std_logic_vector(31 downto 0)
  );
 end alu;
 

@@ -31,8 +31,8 @@ port (
   exmem_out_mem_write_data: out std_logic_vector(31 downto 0);
 
   -- Need to propagate through dest register for write instructions
-  exmem_in_dest_register: in std_logic_vector(31 downto 0);
-  exmem_out_dest_register: out std_logic_vector(31 downto 0)
+  exmem_in_dest_register: in std_logic_vector(4 downto 0);
+  exmem_out_dest_register: out std_logic_vector(4 downto 0)
 
  );
 end exmem_register;

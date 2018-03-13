@@ -164,8 +164,7 @@ component alu is
    operand_a : in std_logic_vector (31 downto 0);
    operand_b : in std_logic_vector (31 downto 0);
    alu_opcode : in std_logic_vector (4 downto 0);
-   result : out std_logic_vector(31 downto 0);
-   zero: out std_logic
+   result : out std_logic_vector(31 downto 0)
  );
 end component;
 
@@ -183,6 +182,9 @@ signal ex_reg_read_data_2: std_logic_vector(31 downto 0);
 signal ex_sign_extend_imm: std_logic_vector(31 downto 0);
 signal ex_rt_register: std_logic_vector(4 downto 0);
 signal ex_rd_register: std_logic_vector(4 downto 0);
+signal ex_dst_register: std_logic_vector(4 downto 0);
+signal ex_alu_result: std_logic_vector(31 downto 0);
+signal ex_alu_operand_b: std_logic_vector(31 downto 0);
 
 ------------------------------ END EX STAGE ------------------------------
 
@@ -208,8 +210,8 @@ port (
   exmem_in_mem_write_data: in std_logic_vector(31 downto 0);
   exmem_out_mem_write_data: out std_logic_vector(31 downto 0);
 
-  exmem_in_dest_register: in std_logic_vector(31 downto 0);
-  exmem_out_dest_register: out std_logic_vector(31 downto 0)
+  exmem_in_dest_register: in std_logic_vector(4 downto 0);
+  exmem_out_dest_register: out std_logic_vector(4 downto 0)
  );
 end component;
 
@@ -230,6 +232,15 @@ component data_memory is
 		readdata: out std_logic_vector (31 downto 0)
 	);
 end component;
+
+signal mem_branch: std_logic;
+signal mem_mem_read: std_logic;
+signal mem_mem_write: std_logic;
+signal mem_reg_write: std_logic;
+signal mem_mem_to_reg: std_logic;
+signal mem_alu_result: std_logic_vector(31 downto 0);
+signal mem_mem_write_data: std_logic_vector(31 downto 0);
+signal mem_dst_register: std_logic_vector(4 downto 0);
 
 ----------------------------- END MEM STAGE -----------------------------
 
@@ -379,7 +390,48 @@ idex_reg: idex_register PORT MAP(
 
 ----------------------------- EX STAGE ---------------------------------
 
+alu_component: alu PORT MAP(
+   operand_a => ex_reg_read_data_1,
+   operand_b => ex_alu_operand_b,
+   alu_opcode => ex_alu_opcode,
+   result => ex_alu_result
+ );
+
+ mux_alu_b: mux2to1 PORT MAP(
+   sel => ex_alu_src,
+   input_0 => ex_reg_read_data_2,
+   input_1 => ex_sign_extend_imm,
+   X => ex_alu_operand_b
+ );
+
+ -- Destination register mux
+ ex_dst_register <= ex_rt_register when (ex_reg_dst = '0') else ex_rd_register;
+
 ----------------------------- END EX STAGE -----------------------------
+
+  exmem_reg: exmem_register PORT MAP(
+    clock => clock,
+
+    exmem_in_branch => ex_branch,
+    exmem_out_branch => mem_branch,
+    exmem_in_mem_read => ex_mem_read,
+    exmem_out_mem_read => mem_mem_read,
+    exmem_in_mem_write => ex_mem_write,
+    exmem_out_mem_write => mem_mem_write,
+
+    exmem_in_reg_write => ex_reg_write,
+    exmem_out_reg_write => mem_reg_write,
+    exmem_in_mem_to_reg => ex_mem_to_reg,
+    exmem_out_mem_to_reg => mem_mem_to_reg,
+    exmem_in_alu_result => ex_alu_result,
+    exmem_out_alu_result => mem_alu_result,
+
+    exmem_in_mem_write_data => ex_reg_read_data_2,
+    exmem_out_mem_write_data => mem_mem_write_data,
+
+    exmem_in_dest_register => ex_dst_register,
+    exmem_out_dest_register => mem_dst_register
+   );
 
 ----------------------------- MEM STAGE ---------------------------------
 
