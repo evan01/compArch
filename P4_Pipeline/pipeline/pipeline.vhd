@@ -44,8 +44,9 @@ end component;
 
 signal pc_output_address: std_logic_vector(31 downto 0);
 signal pc_input_address: std_logic_vector(31 downto 0);
-signal incremented_pc_address: std_logic_vector(31 downto 0);
+signal if_incremented_pc_address: std_logic_vector(31 downto 0);
 signal branch_target_address: std_logic_vector(31 downto 0);
+signal instruction_memory_instruction: std_logic_vector(31 downto 0);
 signal pc_sel: std_logic;
 ----------------------------- END IF STAGE -----------------------------
 
@@ -97,6 +98,22 @@ port (
   input_16  : in  STD_LOGIC_VECTOR (15 downto 0);
   output_32   : out STD_LOGIC_VECTOR (31 downto 0));
 end component;
+
+signal id_instruction: std_logic_vector(31 downto 0);
+signal id_write_register: std_logic_vector(4 downto 0);
+signal id_incremented_pc_address: std_logic_vector(31 downto 0);
+signal id_write_data: std_logic_vector(31 downto 0);
+signal id_reg_read_data_1: std_logic_vector(31 downto 0);
+signal id_reg_read_data_2: std_logic_vector(31 downto 0);
+signal id_reg_read: std_logic;
+signal id_reg_dst: std_logic;
+signal id_alu_src: std_logic;
+signal id_branch: std_logic;
+signal id_mem_read: std_logic;
+signal id_mem_write: std_logic;
+signal id_reg_write: std_logic;
+signal id_mem_to_reg: std_logic;
+signal id_alu_opcode: std_logic_vector (4 downto 0);
 
 ------------------------------ END ID STAGE ------------------------------
 
@@ -223,6 +240,15 @@ port (
  );
 end component;
 
+
+----------------------------- WB STAGE ---------------------------------
+
+signal wb_reg_write: std_logic;
+signal wb_reg_read: std_logic;
+
+----------------------------- END WB STAGE -----------------------------
+
+
 ----------------------------- MISC -------------------------------------
 
 component mux2to1 is
@@ -245,23 +271,56 @@ begin
     output_address => pc_output_address
   );
 
-  pc_input_mux : mux2to1 PORT MAP(
+  mux_pc_input : mux2to1 PORT MAP(
     sel => pc_sel,
-    input_0 => incremented_pc_address,
+    input_0 => if_incremented_pc_address,
     input_1 => branch_target_address,
     X => pc_input_address
   );
 
   pc_incrementer: byte_adder PORT MAP(
     input_address => pc_output_address,
-    output_address => incremented_pc_address
+    output_address => if_incremented_pc_address
   );
 ----------------------------- END IF STAGE -----------------------------
 
+  ifid_reg: ifid_register PORT MAP(
+    clock => clock,
+    ifid_in_incremented_pc_address => if_incremented_pc_address,
+    ifid_out_incremented_pc_address => id_incremented_pc_address,
+    ifid_in_instruction => instruction_memory_instruction,
+    ifid_out_instruction => id_instruction
+  );
 
 ----------------------------- ID STAGE ---------------------------------
 
+  cpu_reg: cpu_registers PORT MAP(
+    clock => clock,
+    reset => reset,
+    read_register_1 => id_instruction(25 downto 21),
+    read_register_2 => id_instruction(20 downto 16),
+    write_register => id_write_register,
+    write_data => id_write_data,
+    read_data_1 => id_reg_read_data_1,
+    read_data_2 => id_reg_read_data_2,
+    regwrite => wb_reg_write,
+    regread => wb_reg_read
+  );
+
+  pipeline_ctlr: pipeline_controller PORT MAP(
+    instruction => id_instruction,
+    reg_dst => id_reg_dst,
+    alu_src => id_alu_src,
+    branch => id_branch,
+    mem_read => id_mem_read,
+    mem_write=> id_mem_write,
+    reg_write=> id_reg_write,
+    mem_to_reg => id_mem_to_reg,
+    alu_opcode => id_alu_opcode
+  );
+
 ----------------------------- END ID STAGE -----------------------------
+
 
 ----------------------------- EX STAGE ---------------------------------
 
