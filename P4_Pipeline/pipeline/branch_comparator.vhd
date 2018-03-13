@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity branch_controller is
+entity branch_comparator is
 port (
   -- Control signal dictating whether instruction is branch
   branch: in std_logic;
@@ -15,9 +15,9 @@ port (
   -- Set to 1 if we want to take branch
   branch_taken : out std_logic := '0'
 );
-end branch_controller;
+end branch_comparator;
 
-architecture arch of branch_controller is
+architecture arch of branch_comparator is
 begin
 
 zero_calc: process (operand_a, operand_b)

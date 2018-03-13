@@ -92,6 +92,16 @@ port (
   output_32   : out STD_LOGIC_VECTOR (31 downto 0));
 end component;
 
+component branch_comparator is
+port (
+  branch: in std_logic;
+  operand_a : in std_logic_vector(31 downto 0);
+  operand_b : in std_logic_vector(31 downto 0);
+  alu_opcode : in std_logic_vector (4 downto 0);
+  branch_taken : out std_logic := '0'
+);
+end component;
+
 signal id_instruction: std_logic_vector(31 downto 0);
 signal id_write_register: std_logic_vector(4 downto 0);
 signal id_incremented_pc_address: std_logic_vector(31 downto 0);
@@ -106,8 +116,10 @@ signal id_mem_read: std_logic;
 signal id_mem_write: std_logic;
 signal id_reg_write: std_logic;
 signal id_mem_to_reg: std_logic;
+signal id_pc_src: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
+signal id_branch_target_address: std_logic_vector(31 downto 0);
 ------------------------------ END ID STAGE ------------------------------
 
 component idex_register is
@@ -121,8 +133,6 @@ port (
   idex_in_ALUSrc: in std_logic;
   idex_out_ALUSrc: out std_logic;
 
-  idex_in_branch: in std_logic;
-  idex_out_branch: out std_logic;
   idex_in_mem_read: in std_logic;
   idex_out_mem_read: out std_logic;
   idex_in_mem_write: in std_logic;
@@ -164,7 +174,6 @@ end component;
 signal ex_reg_read: std_logic;
 signal ex_reg_dst: std_logic;
 signal ex_alu_src: std_logic;
-signal ex_branch: std_logic;
 signal ex_mem_read: std_logic;
 signal ex_mem_write: std_logic;
 signal ex_reg_write: std_logic;
@@ -186,8 +195,6 @@ component exmem_register is
 port (
   clock: in std_logic;
 
-  exmem_in_branch: in std_logic;
-  exmem_out_branch: out std_logic;
   exmem_in_mem_read: in std_logic;
   exmem_out_mem_read: out std_logic;
   exmem_in_mem_write: in std_logic;
@@ -221,7 +228,6 @@ component data_memory is
 	);
 end component;
 
-signal mem_branch: std_logic;
 signal mem_mem_read: std_logic;
 signal mem_mem_write: std_logic;
 signal mem_reg_write: std_logic;
@@ -289,10 +295,10 @@ begin
   );
 
   mux_pc_input : mux2to1 PORT MAP(
-    sel => pc_sel,
+    sel => id_pc_src,
     input_0 => if_incremented_pc_address,
-    input_1 => mem_branch_target_address,
-    X => pc_input_address
+    input_1 => id_branch_target_address,
+    X => if_pc_input_address
   );
 
   pc_incrementer: byte_adder PORT MAP(
@@ -302,7 +308,7 @@ begin
 
   instruction_mem: instruction_memory PORT MAP (
   		clock => clock,
-  		pc => pc_output_address,
+  		pc => if_pc_output_address,
   		instruction_out => if_instruction
   	);
 ----------------------------- END IF STAGE -----------------------------
@@ -347,6 +353,16 @@ begin
     output_32 => id_sign_extend_imm
   );
 
+  branch_comp: branch_comparator PORT MAP(
+    branch => id_branch,
+    operand_a => id_reg_read_data_1,
+    operand_b => id_reg_read_data_2,
+    alu_opcode => id_alu_opcode,
+    branch_taken => id_pc_src
+  );
+
+  id_branch_target_address <= std_logic_vector((unsigned(id_sign_extend_imm) sll 2) + unsigned(id_incremented_pc_address));
+
 ----------------------------- END ID STAGE -----------------------------
 
 idex_reg: idex_register PORT MAP(
@@ -359,8 +375,6 @@ idex_reg: idex_register PORT MAP(
   idex_in_ALUSrc => id_alu_src,
   idex_out_ALUSrc => ex_alu_src,
 
-  idex_in_branch => id_branch,
-  idex_out_branch => ex_branch,
   idex_in_mem_read => id_mem_read,
   idex_out_mem_read => ex_mem_read,
   idex_in_mem_write => id_mem_write,
@@ -411,8 +425,6 @@ alu_component: alu PORT MAP(
   exmem_reg: exmem_register PORT MAP(
     clock => clock,
 
-    exmem_in_branch => ex_branch,
-    exmem_out_branch => mem_branch,
     exmem_in_mem_read => ex_mem_read,
     exmem_out_mem_read => mem_mem_read,
     exmem_in_mem_write => ex_mem_write,

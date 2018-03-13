@@ -17,8 +17,6 @@ port (
   idex_out_ALUSrc: out std_logic;
 
   --Memory access stage control lines
-  idex_in_branch: in std_logic;
-  idex_out_branch: out std_logic;
   idex_in_mem_read: in std_logic;
   idex_out_mem_read: out std_logic;
   idex_in_mem_write: in std_logic;
@@ -63,7 +61,6 @@ begin
     idex_out_RegDst <= idex_in_RegDst;
     idex_out_alu_opcode <= idex_in_alu_opcode;
     idex_out_ALUSrc <= idex_in_ALUSrc;
-    idex_out_branch <= idex_in_branch;
     idex_out_mem_read <= idex_in_mem_read;
     idex_out_mem_write <= idex_in_mem_write;
     idex_out_reg_write <= idex_in_reg_write;
