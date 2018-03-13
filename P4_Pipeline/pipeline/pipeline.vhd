@@ -35,6 +35,7 @@ component instruction_memory is
 	);
 end component;
 
+-- All the signals/wires for the if stage
 signal if_pc_output_address: std_logic_vector(31 downto 0);
 signal if_pc_input_address: std_logic_vector(31 downto 0);
 signal if_incremented_pc_address: std_logic_vector(31 downto 0);
@@ -102,6 +103,7 @@ port (
 );
 end component;
 
+-- All the signals/wires for the id stage
 signal id_instruction: std_logic_vector(31 downto 0);
 signal id_write_register: std_logic_vector(4 downto 0);
 signal id_incremented_pc_address: std_logic_vector(31 downto 0);
@@ -171,6 +173,7 @@ component alu is
  );
 end component;
 
+-- All the signals/wires for the ex stage
 signal ex_reg_read: std_logic;
 signal ex_reg_dst: std_logic;
 signal ex_alu_src: std_logic;
@@ -228,6 +231,7 @@ component data_memory is
 	);
 end component;
 
+-- All the signals/wires for the ex stage
 signal mem_mem_read: std_logic;
 signal mem_mem_write: std_logic;
 signal mem_reg_write: std_logic;
@@ -262,6 +266,7 @@ end component;
 
 ----------------------------- WB STAGE ---------------------------------
 
+-- All the signals/wires for the wb stage
 signal wb_reg_write: std_logic;
 signal wb_reg_read: std_logic;
 signal wb_mem_to_reg: std_logic;
@@ -269,8 +274,8 @@ signal wb_datamem_read_data: std_logic_vector(31 downto 0);
 signal wb_alu_result: std_logic_vector(31 downto 0);
 signal wb_dst_register: std_logic_vector(4 downto 0);
 signal wb_reg_write_data: std_logic_vector(31 downto 0);
------------------------------ END WB STAGE -----------------------------
 
+----------------------------- END WB STAGE -----------------------------
 
 ----------------------------- MISC -------------------------------------
 
@@ -283,8 +288,8 @@ end component;
 
 ----------------------------- END MISC ---------------------------------
 
-
 begin
+
 ----------------------------- IF STAGE ---------------------------------
 
   pc: program_counter PORT MAP(
@@ -361,6 +366,7 @@ begin
     branch_taken => id_pc_src
   );
 
+  --Calculate the branch target address for an instruction in the ID stage
   id_branch_target_address <= std_logic_vector((unsigned(id_sign_extend_imm) sll 2) + unsigned(id_incremented_pc_address));
 
 ----------------------------- END ID STAGE -----------------------------
