@@ -28,26 +28,19 @@ component byte_adder is
 end component;
 
 component instruction_memory is
-	generic(
-		-- ram_size : INTEGER := 32768;
-		ram_size : integer := 8192; --This is in WORDS
-		clock_period : time := 1 ns
-	);
 	port(
 		clock: in std_logic;
-		memwrite: in std_logic;
-		pc : in integer range 0 to 8192-1;
-		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
+		pc : in std_logic_vector (31 downto 0);
 		instruction_out: out std_logic_vector (31 downto 0)
 	);
 end component;
 
-signal pc_output_address: std_logic_vector(31 downto 0);
-signal pc_input_address: std_logic_vector(31 downto 0);
+signal if_pc_output_address: std_logic_vector(31 downto 0);
+signal if_pc_input_address: std_logic_vector(31 downto 0);
 signal if_incremented_pc_address: std_logic_vector(31 downto 0);
-signal branch_target_address: std_logic_vector(31 downto 0);
-signal instruction_memory_instruction: std_logic_vector(31 downto 0);
-signal pc_sel: std_logic;
+signal if_branch_target_address: std_logic_vector(31 downto 0);
+signal if_instruction: std_logic_vector(31 downto 0);
+signal if_pc_sel: std_logic;
 ----------------------------- END IF STAGE -----------------------------
 
 component ifid_register is
@@ -218,17 +211,12 @@ end component;
 ----------------------------- MEM STAGE ---------------------------------
 
 component data_memory is
-	generic(
-		-- ram_size : INTEGER := 32768;
-		ram_size : integer := 8192; --This is in WORDS
-		clock_period : time := 1 ns
-	);
 	port(
 		clock: in std_logic;
 		memwrite: in std_logic;
 		memread: in std_logic;
-		address : in integer;
-		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
+		address : in std_logic_vector(31 downto 0);
+		writedata: in std_logic_vector (31 downto 0);
 		readdata: out std_logic_vector (31 downto 0)
 	);
 end component;
@@ -291,28 +279,34 @@ begin
   pc: program_counter PORT MAP(
     clock => clock,
     reset => reset,
-    input_address => pc_input_address,
-    output_address => pc_output_address
+    input_address => if_pc_input_address,
+    output_address => if_pc_output_address
   );
 
   mux_pc_input : mux2to1 PORT MAP(
     sel => pc_sel,
     input_0 => if_incremented_pc_address,
-    input_1 => branch_target_address,
+    input_1 => mem_branch_target_address,
     X => pc_input_address
   );
 
   pc_incrementer: byte_adder PORT MAP(
-    input_address => pc_output_address,
+    input_address => if_pc_output_address,
     output_address => if_incremented_pc_address
   );
+
+  instruction_mem: instruction_memory PORT MAP (
+  		clock => clock,
+  		pc => pc_output_address,
+  		instruction_out => if_instruction
+  	);
 ----------------------------- END IF STAGE -----------------------------
 
   ifid_reg: ifid_register PORT MAP(
     clock => clock,
     ifid_in_incremented_pc_address => if_incremented_pc_address,
     ifid_out_incremented_pc_address => id_incremented_pc_address,
-    ifid_in_instruction => instruction_memory_instruction,
+    ifid_in_instruction => if_instruction,
     ifid_out_instruction => id_instruction
   );
 
