@@ -114,7 +114,7 @@ signal id_mem_write: std_logic;
 signal id_reg_write: std_logic;
 signal id_mem_to_reg: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
-
+signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 ------------------------------ END ID STAGE ------------------------------
 
 component idex_register is
@@ -123,10 +123,8 @@ port (
 
   idex_in_RegDst: in std_logic;
   idex_out_RegDst: out std_logic;
-  idex_in_ALUOp1: in std_logic;
-  idex_out_ALUOp1: out std_logic;
-  idex_in_ALUOp0: in std_logic;
-  idex_out_ALUOp0: out std_logic;
+  idex_in_alu_opcode: in std_logic_vector (4 downto 0);
+  idex_out_alu_opcode: out std_logic_vector (4 downto 0);
   idex_in_ALUSrc: in std_logic;
   idex_out_ALUSrc: out std_logic;
 
@@ -142,20 +140,20 @@ port (
   idex_in_mem_to_reg: in std_logic;
   idex_out_mem_to_reg: out std_logic;
 
-  idex_in_operand_a: in std_logic_vector(31 downto 0);
-  idex_out_operand_a: out std_logic_vector(31 downto 0);
+  idex_in_read_data_1: in std_logic_vector(31 downto 0);
+  idex_out_read_data_1: out std_logic_vector(31 downto 0);
 
-  idex_in_operand_b: in std_logic_vector(31 downto 0);
-  idex_out_operand_b: out std_logic_vector(31 downto 0);
+  idex_in_read_data_2: in std_logic_vector(31 downto 0);
+  idex_out_read_data_2: out std_logic_vector(31 downto 0);
 
   idex_in_sign_extend_imm: in std_logic_vector(31 downto 0);
   idex_out_sign_extend_imm: out std_logic_vector(31 downto 0);
 
-  idex_in_rt_register: in std_logic_vector(31 downto 0);
-  idex_out_rt_register: out std_logic_vector(31 downto 0);
+  idex_in_rt_register: in std_logic_vector(4 downto 0);
+  idex_out_rt_register: out std_logic_vector(4 downto 0);
 
-  idex_in_rd_register: in std_logic_vector(31 downto 0);
-  idex_out_rd_register: out std_logic_vector(31 downto 0)
+  idex_in_rd_register: in std_logic_vector(4 downto 0);
+  idex_out_rd_register: out std_logic_vector(4 downto 0)
  );
 end component;
 
@@ -170,6 +168,21 @@ component alu is
    zero: out std_logic
  );
 end component;
+
+signal ex_reg_read: std_logic;
+signal ex_reg_dst: std_logic;
+signal ex_alu_src: std_logic;
+signal ex_branch: std_logic;
+signal ex_mem_read: std_logic;
+signal ex_mem_write: std_logic;
+signal ex_reg_write: std_logic;
+signal ex_mem_to_reg: std_logic;
+signal ex_alu_opcode: std_logic_vector(4 downto 0);
+signal ex_reg_read_data_1: std_logic_vector(31 downto 0);
+signal ex_reg_read_data_2: std_logic_vector(31 downto 0);
+signal ex_sign_extend_imm: std_logic_vector(31 downto 0);
+signal ex_rt_register: std_logic_vector(4 downto 0);
+signal ex_rd_register: std_logic_vector(4 downto 0);
 
 ------------------------------ END EX STAGE ------------------------------
 
@@ -319,8 +332,50 @@ begin
     alu_opcode => id_alu_opcode
   );
 
+  sign_extend: sign_extender PORT MAP(
+    input_16  => id_instruction(15 downto 0),
+    output_32 => id_sign_extend_imm
+  );
+
 ----------------------------- END ID STAGE -----------------------------
 
+idex_reg: idex_register PORT MAP(
+  clock => clock,
+
+  idex_in_RegDst => id_reg_dst,
+  idex_out_RegDst => ex_reg_dst,
+  idex_in_alu_opcode => id_alu_opcode,
+  idex_out_alu_opcode => ex_alu_opcode,
+  idex_in_ALUSrc => id_alu_src,
+  idex_out_ALUSrc => ex_alu_src,
+
+  idex_in_branch => id_branch,
+  idex_out_branch => ex_branch,
+  idex_in_mem_read => id_mem_read,
+  idex_out_mem_read => ex_mem_read,
+  idex_in_mem_write => id_mem_write,
+  idex_out_mem_write => ex_mem_write,
+
+  idex_in_reg_write => id_reg_write,
+  idex_out_reg_write => ex_reg_write,
+  idex_in_mem_to_reg => id_mem_to_reg,
+  idex_out_mem_to_reg => ex_mem_to_reg,
+
+  idex_in_read_data_1 => id_reg_read_data_1,
+  idex_out_read_data_1 => ex_reg_read_data_1,
+
+  idex_in_read_data_2 => id_reg_read_data_2,
+  idex_out_read_data_2 => ex_reg_read_data_2,
+
+  idex_in_sign_extend_imm =>id_sign_extend_imm,
+  idex_out_sign_extend_imm => ex_sign_extend_imm,
+
+  idex_in_rt_register => id_instruction(20 downto 16),
+  idex_out_rt_register => ex_rt_register,
+
+  idex_in_rd_register => id_instruction(15 downto 11),
+  idex_out_rd_register => ex_rd_register
+ );
 
 ----------------------------- EX STAGE ---------------------------------
 
