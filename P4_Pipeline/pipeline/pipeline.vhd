@@ -262,6 +262,7 @@ signal wb_mem_to_reg: std_logic;
 signal wb_datamem_read_data: std_logic_vector(31 downto 0);
 signal wb_alu_result: std_logic_vector(31 downto 0);
 signal wb_dst_register: std_logic_vector(4 downto 0);
+signal wb_reg_write_data: std_logic_vector(31 downto 0);
 ----------------------------- END WB STAGE -----------------------------
 
 
@@ -463,6 +464,13 @@ alu_component: alu PORT MAP(
  );
 
 ----------------------------- WB STAGE ---------------------------------
+
+ mux_wb_memtoreg : mux2to1 PORT MAP(
+   sel => wb_mem_to_reg,
+   input_0 => wb_datamem_read_data,
+   input_1 => wb_alu_result,
+   X => wb_reg_write_data
+ );
 
 ----------------------------- END WB STAGE -----------------------------
 
