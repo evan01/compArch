@@ -4,3 +4,6 @@
 P4_Pipeline/pipeline/work/_info
 *.bak
 *.mpf
+*.DS_Store
+
+P4_Pipeline/assembler/assembler_main/.idea

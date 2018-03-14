@@ -13,6 +13,7 @@ architecture arch of instruction_memory_tb is
 			clock_period : time := 1 ns	
 		);
 		port(
+			reset: in std_logic;
 			clock: in std_logic;
 			memwrite: in std_logic;
 			pc : in std_logic_vector (31 downto 0);
