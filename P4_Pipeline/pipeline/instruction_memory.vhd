@@ -14,9 +14,7 @@ entity instruction_memory is
 	);
 	port(
 		clock: in std_logic;
-		memwrite: in std_logic := '0';
 		pc : in std_logic_vector (31 downto 0);
-		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 		instruction_out: out std_logic_vector (31 downto 0)
 	);
 end instruction_memory;
@@ -37,7 +35,8 @@ begin
 			for i in 0 to ram_size-1 loop
 				ram(i) <= std_logic_vector(to_unsigned(0,32));
 			end loop;
-			file_open(file_pointer, "instructions.txt", READ_MODE);
+			
+			file_open(file_pointer, "program.txt", READ_MODE);
 			while not endfile(file_pointer) loop
 				readline(file_pointer, line_num);
         		read(line_num, data);
@@ -50,11 +49,7 @@ begin
 
 		--Memory logic
 		if(rising_edge(clock)) then
-			if(memwrite ='1') then
-				ram(to_integer(unsigned(pc))) <= writedata;
-			else
-				instruction_out <= ram(to_integer(unsigned(pc)));
-			end if;
+			instruction_out <= ram(to_integer(unsigned(pc)));
 		end if;
 
 	end process;

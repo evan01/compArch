@@ -8,31 +8,30 @@ entity pipeline_tb is
 end pipeline_tb;
 
 architecture arch of pipeline_tb is
-
-    signal
     component pipeline is
         port(
             clock: in std_logic; 
-            reset: in std_logic
+            reset: in std_logic;
+            write_data_to_file : in std_logic;
+            write_registers_to_file : in std_logic
         );
     end component;
 
     --instantiate signals
     signal clk : std_logic := '0';
     signal reset : std_logic :='0';
-
-    --Data and Register Memory Signals
-    type data_mem is array(8192-1 downto 0) of std_logic_vector(31 downto 0);
-    signal ram: data_mem;
-
-    type registers is array(31 downto 0) of std_logic_vector(31 downto 0);
-    signal reg: registers;
+    signal write_data_to_file : std_logic :='0';
+    signal write_registers_to_file : std_logic :='0';
+    constant clk_period : time := 1 ns;
 
 begin
     --1. Hook up component
     pipe : pipeline
     port map(
-        clk,reset
+        clk,
+        reset,
+        write_data_to_file,
+        write_registers_to_file
     );
 
 	--2. CLOCK PROCESS and COUNTER PROCESS
@@ -47,58 +46,27 @@ begin
     --3. TEST PROCESS
     test_process : process
     
-	procedure 10000_clock_cycles is 
-	begin
-		for i in 0 to 99 loop
-		    wait for clk_period;
-		end loop;
-    end procedure;
-
-    procedure write_data_memory is 
-    	file memory_file_pointer: text;
-		variable memory_line: line;
-        variable memory_data: std_logic_vector(31 downto 0);
-    begin
-       --First aquire memory data
-        ram <= pipe.data_memory.ram;
-
-        --Write output here
-        file_open(memory_file_pointer, "memory.txt", WRITE_MODE);
-            for i in 0 to 8191 loop
-                --Write the data to the line
-                write(memory_line, ram(i)); 
-                --Write the line to the file
-                writeline(memory_file_pointer, memory_line);
+        procedure ten_k_clock_cycles is 
+        begin
+            for i in 0 to 10000 loop
+                wait for clk_period;
             end loop;
-		file_close(memory_file_pointer);
-    end procedure;
+        end procedure;
 
-    procedure write_registers is 
-    	file register_file_pointer: text;
-		variable register_line: line;
-		variable register_data: std_logic_vector(31 downto 0);
-    begin
-        --First aquire register data
+        procedure write_data_and_registers_to_memory is 
+        begin
+            write_data_to_file <= '1';
+            write_registers_to_file <= '1';
+            wait for clk_period*100;
+        end procedure;
 
-        --Write ouput here
-        file_open(register_file_pointer, "memory.txt", WRITE_MODE);
-            write(r)
-			for i in 0 to 8191 loop
-                --Write the data to the line
-                write(register_line, reg(i)); 
-                --Write the line to the file
-                writeline(register_file_pointer, register_line);
-            end loop;
-		file_close(register_file_pointer);
-    end procedure;
-    
-    --RUN PROCEDURES HERE
-    10000_clock_cycles;
-    write_data_memory;
-    write_registers;
+        --RUN PROCEDURES HERE
+        begin
+        ten_k_clock_cycles;
+        write_data_and_registers_to_memory;
 	end process;
 
-end arch ; -- arch
+end arch;
 
 
 -- Todo
