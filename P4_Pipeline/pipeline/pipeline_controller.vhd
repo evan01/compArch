@@ -34,6 +34,7 @@ funct <= instruction(5 downto 0);
 	BEGIN
 		CASE op_code IS
 			-- add
+			-- R Type
 			WHEN "100000" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -44,7 +45,8 @@ funct <= instruction(5 downto 0);
 				mem_to_reg <= '0';
 				alu_opcode <= "00000";
 
-				-- sub 
+			-- sub 
+			-- R type
 			WHEN "100010" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -56,9 +58,10 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00001";
 
 				-- addi 
+				-- I type
 			WHEN "001000" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -67,6 +70,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00010"; 
 
 				-- mult
+				-- r type
 			WHEN "011000" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -78,6 +82,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00011";
 
 				-- div
+				-- r type
 			WHEN "011010" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -87,7 +92,9 @@ funct <= instruction(5 downto 0);
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "00100";
+
 				-- slt
+				-- r type
 			WHEN "101010" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -99,9 +106,10 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00101";
 
 				-- slti
+				-- i type
 			WHEN "001010" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -110,6 +118,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00110";
 
 				-- and
+				-- r type
 			WHEN "100100" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -121,6 +130,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "00111";
 
 				-- or
+				-- r type
 			WHEN "100101" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -132,6 +142,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01000";
 
 				-- nor
+				-- r type
 			WHEN "100111" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -143,6 +154,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01001";
 
 				-- xor
+				-- r type
 			WHEN "100110" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -154,9 +166,10 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01010";
 
 				-- andi
+				-- i type
 			WHEN "001100" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -165,9 +178,10 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01011";
 
 				-- ori
+				-- i type
 			WHEN "001101" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -176,9 +190,10 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01100";
 
 				-- xori
+				-- i type
 			WHEN "001110" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -187,6 +202,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "01101";
 
 				-- mfhi
+				-- r type
 			WHEN "010000" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -196,7 +212,9 @@ funct <= instruction(5 downto 0);
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "01110";
+				
 				-- mflo
+				-- r type
 			WHEN "010010" => 
 				reg_dst <= '1';
 				alu_src <= '0';
@@ -206,10 +224,12 @@ funct <= instruction(5 downto 0);
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "01111";
+				
 				-- lui
+				-- i type
 			WHEN "001111" => 
 				reg_dst <= '1';
-				alu_src <= '0';
+				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
 				mem_write <= '0';
@@ -222,6 +242,7 @@ funct <= instruction(5 downto 0);
 				CASE funct IS
 					WHEN "000000" => 
 						-- sll
+						-- r type
 						reg_dst <= '1';
 						alu_src <= '0';
 						branch <= '0';
@@ -233,6 +254,7 @@ funct <= instruction(5 downto 0);
  
 					WHEN "000010" => 
 						-- srl
+						-- r type
 						reg_dst <= '1';
 						alu_src <= '0';
 						branch <= '0';
@@ -245,6 +267,7 @@ funct <= instruction(5 downto 0);
  
 					WHEN "000011" => 
 						-- sra
+						-- r type
 						reg_dst <= '1';
 						alu_src <= '0';
 						branch <= '0';
@@ -255,6 +278,7 @@ funct <= instruction(5 downto 0);
 						alu_opcode <= "10011"; 
  
 						-- jr
+						-- r type
 					WHEN "001000" => 
 						reg_dst <= '1'; -- dont care
 						alu_src <= '0';
@@ -277,6 +301,7 @@ funct <= instruction(5 downto 0);
  
 			END CASE; 
 			-- lw
+			-- i type
 			WHEN "100011" => 
 				reg_dst <= '0';
 				alu_src <= '1';
@@ -288,6 +313,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "10100";
 
 				-- sw
+				-- i type
 			WHEN "101011" => 
 				reg_dst <= '1'; -- dont care
 				alu_src <= '1';
@@ -299,6 +325,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "10101";
 
 				-- beq
+				-- i type
 			WHEN "000100" => 
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
@@ -310,6 +337,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "10110";
 
 				-- bne
+				-- i type
 			WHEN "000101" => 
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
@@ -321,6 +349,7 @@ funct <= instruction(5 downto 0);
 				alu_opcode <= "10111";
 
 				-- j
+				-- j type
 			WHEN "000010" => 
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
@@ -333,6 +362,7 @@ funct <= instruction(5 downto 0);
  
 
 				-- jal
+				-- j type
 			WHEN "000011" => 
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
