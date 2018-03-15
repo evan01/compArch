@@ -15,7 +15,7 @@ entity instruction_memory is
 	port(
 		clock: in std_logic;
 		pc : in std_logic_vector (31 downto 0);
-		instruction_out: out std_logic_vector (31 downto 0)
+		instruction_out: out std_logic_vector (31 downto 0) := (others => '0')
 	);
 end instruction_memory;
 

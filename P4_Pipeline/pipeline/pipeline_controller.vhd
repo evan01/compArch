@@ -20,18 +20,19 @@ END pipeline_controller;
 
 ARCHITECTURE arch OF pipeline_controller IS
 
-	SIGNAL op_code : std_logic_vector (5 DOWNTO 0);
-	SIGNAL funct : std_logic_vector (5 DOWNTO 0);
+signal op_code : std_logic_vector (5 DOWNTO 0) := instruction(31 downto 26);
+signal funct : std_logic_vector (5 DOWNTO 0) := instruction(5 downto 0);
+
 
 BEGIN
-	operation : PROCESS (op_code, funct)
+
+op_code <= instruction(31 downto 26);
+funct <= instruction(5 downto 0);
+
+	operation : PROCESS (instruction)
+	
 	BEGIN
-		op_code <= instruction(31 DOWNTO 26);
-		funct <= instruction(5 DOWNTO 0);
- 
- 
 		CASE op_code IS
- 
 			-- add
 			WHEN "100000" => 
 				reg_dst <= '1';
@@ -265,7 +266,14 @@ BEGIN
 						alu_opcode <= "11001";
  
 					WHEN OTHERS => 
-						NULL; 
+						reg_dst <= '0'; -- dont care
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '0';
+						mem_to_reg <= '0'; -- dont care
+						alu_opcode <= "00000";
  
 			END CASE; 
 			-- lw

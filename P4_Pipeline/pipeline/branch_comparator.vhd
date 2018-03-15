@@ -13,7 +13,7 @@ port (
   -- The actual alu operation
   alu_opcode : in std_logic_vector (4 downto 0);
   -- Set to 1 if we want to take branch
-  branch_taken : out std_logic := '0'
+  branch_taken : out std_logic
 );
 end branch_comparator;
 

@@ -7,7 +7,7 @@ entity program_counter is
    clock : in std_logic;
    reset : in std_logic;
    pc_write : in std_logic := '1';
-   input_address : in std_logic_vector (31 downto 0) := (others => '0');
+   input_address : in std_logic_vector (31 downto 0);
    output_address : out std_logic_vector(31 downto 0) := (others => '0')
    );
 end program_counter;
