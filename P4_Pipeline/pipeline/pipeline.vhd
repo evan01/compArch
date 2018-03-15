@@ -5,7 +5,9 @@ use ieee.numeric_std.all;
 entity pipeline is
  port (
    clock : in std_logic;
-   reset : in std_logic
+   reset : in std_logic;
+   write_data_to_file : in std_logic;
+   write_registers_to_file : in std_logic
    );
 end pipeline;
 
@@ -61,6 +63,7 @@ component cpu_registers is
  port (
    clock : in std_logic;
    reset : in std_logic;
+   write_registers_to_file: in std_logic;
    read_register_1 : in std_logic_vector (4 downto 0);
    read_register_2 : in std_logic_vector (4 downto 0);
    write_register : in std_logic_vector (4 downto 0);
@@ -224,7 +227,8 @@ component data_memory is
 	port(
 		clock: in std_logic;
 		memwrite: in std_logic;
-		memread: in std_logic;
+    memread: in std_logic;
+    write_data_to_file: in std_logic;
 		address : in std_logic_vector(31 downto 0);
 		writedata: in std_logic_vector (31 downto 0);
 		readdata: out std_logic_vector (31 downto 0)
@@ -331,6 +335,7 @@ begin
   cpu_reg: cpu_registers PORT MAP(
     clock => clock,
     reset => reset,
+    write_registers_to_file => write_registers_to_file,
     read_register_1 => id_instruction(25 downto 21),
     read_register_2 => id_instruction(20 downto 16),
     write_register => id_write_register,
@@ -455,7 +460,8 @@ alu_component: alu PORT MAP(
   data_mem: data_memory PORT MAP(
   		clock => clock,
   		memwrite => mem_mem_write,
-  		memread => mem_mem_read,
+      memread => mem_mem_read,
+      write_data_to_file => write_data_to_file,
   		address => mem_alu_result,
   		writedata => mem_datamem_write_data,
   		readdata => mem_datamem_read_data

@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use STD.textio.all;
+use ieee.std_logic_textio.all;
 
 entity data_memory_tb is 
 end data_memory_tb;
@@ -16,6 +18,7 @@ architecture arch of data_memory_tb is
 			clock: in std_logic;
 			memwrite: in std_logic;
 			memread: in std_logic;
+			write_data_to_file: in std_logic;
 			address: in std_logic_vector (31 downto 0);
 			writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
 			readdata: out std_logic_vector (31 downto 0)
@@ -30,6 +33,7 @@ architecture arch of data_memory_tb is
 	signal address: std_logic_vector(31 downto 0);
 	signal writedata: std_logic_vector(31 downto 0);
 	signal readdata: std_logic_vector(31 downto 0);
+	signal w_data_to_file: std_logic := '0';
 
 begin
 	----INSTANTIATE COMPONENT
@@ -41,6 +45,7 @@ begin
 		clk,
 		mwrite,
 		mread,
+		w_data_to_file,
 		address,
 		writedata,
 		readdata
@@ -84,9 +89,17 @@ begin
 		end loop;
 	end procedure;
 
+	procedure write_data_to_file is 
+	begin
+		w_data_to_file <= '1';
+		wait for clk_period;
+	end procedure;
+
 	begin
 	
 	seed_memory_with_data;
 	check_data_in_mem;
+	write_data_to_file;
+
 	end process;
 end arch;
