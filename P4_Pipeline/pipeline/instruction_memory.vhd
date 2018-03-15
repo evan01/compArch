@@ -49,8 +49,12 @@ begin
 
 		--Memory logic
 		if(rising_edge(clock)) then
-			instruction_out <= ram(to_integer(unsigned(pc)));
+			if(to_integer(unsigned(pc)) < 8192) then
+				instruction_out <= ram(to_integer(unsigned(pc)));
+			end if;
 		end if;
 
 	end process;
 end arch;
+
+--MAKE SURE PC NEVER MORE THAN IM
