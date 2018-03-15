@@ -13,7 +13,6 @@ architecture arch of instruction_memory_tb is
 			clock_period : time := 1 ns	
 		);
 		port(
-			reset: in std_logic;
 			clock: in std_logic;
 			memwrite: in std_logic;
 			pc : in std_logic_vector (31 downto 0);
@@ -71,19 +70,16 @@ begin
 	--Procedure 2, read the data!
 	procedure read_data is 
 	begin
-		mwrite <= '0';
 		for i in 0 to 99 loop
 			pc <= std_logic_vector(to_unsigned(i,pc'length));
 			wait for clk_period;
-			if(not unsigned(instruction_out) = i) then
-				report "Error, the memory didn't return the correct instruction";
-			end if;
+			assert (unsigned(instruction_out) /= 0) report "Error, the memory didn't return the correct instruction";
 		end loop;
 	end procedure;
 
 	begin
 	
-	seed_memory_with_data;
+	--seed_memory_with_data;
 	read_data;
 
 	end process;

@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use STD.textio.all;
+use ieee.std_logic_textio.all;
 --NOTE, the majority of this code is taken from the Quartus Design and Synthesis handbook
 --as well as the faculty of Engineering at McGill University, Computer Architecture Course
 
@@ -12,7 +14,6 @@ entity instruction_memory is
 	);
 	port(
 		clock: in std_logic;
-		reset: in std_logic;
 		memwrite: in std_logic := '0';
 		pc : in std_logic_vector (31 downto 0);
 		writedata: in std_logic_vector (31 downto 0); --instead of using alu result, just use forwarded val.
@@ -23,29 +24,28 @@ end instruction_memory;
 architecture arch of instruction_memory is
 	type mem is array(ram_size-1 downto 0) of std_logic_vector(31 downto 0);
 	signal ram: mem;
+	signal instructions_loaded : std_logic := '0';
 begin
 	mem_proc: process (clock)
 	--The following code taken from https://stackoverflow.com/questions/20912683/how-to-simulate-memory-on-vhdl-test-bench
-		file in_file: text open read_mode is "instructions.txt";
-		variable line_str: line;
-		variable address: std_logic_vector(31 downto 0);
+		file file_pointer: text;
+		variable line_num: line;
+		variable counter: integer := 0;
 		variable data: std_logic_vector(31 downto 0);
 	begin
-		if (now < 1 ps) then --INITIALIZE Memory to file!!
-			-- for i in 0 to ram_size-1 loop
-			-- 	ram(i) <= std_logic_vector(to_unsigned(0,32));
-			-- end loop;
-			readline(in_file, line_str);
-			hread(line_str, address);
-			starting_pc <= address;
-			while not endfile(in_file) loop
-				readline(in_file, line_str);
-        		hread(line_str, address);
-        		read(line_str, data);
-        		ram(to_integer(unsigned(address))) <= data;
-        		report "Initialized " & integer'image(to_integer(unsigned(address))) & " to " & 
-              		integer'image(to_integer(unsigned(data)));
+		if (instructions_loaded = '0') then --INITIALIZE Memory to file!!
+			for i in 0 to ram_size-1 loop
+				ram(i) <= std_logic_vector(to_unsigned(0,32));
 			end loop;
+			file_open(file_pointer, "instructions.txt", READ_MODE);
+			while not endfile(file_pointer) loop
+				readline(file_pointer, line_num);
+        		read(line_num, data);
+				ram(counter) <= data;
+				counter := counter + 1;
+			end loop;
+			file_close(file_pointer);
+			instructions_loaded <= '1';
 		end if;
 
 		--Memory logic
