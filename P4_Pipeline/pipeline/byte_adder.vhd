@@ -4,8 +4,8 @@ use ieee.numeric_std.all;
 
 entity byte_adder is
 port (
-  input_address : in std_logic_vector(31 downto 0);
-  output_address : out std_logic_vector(31 downto 0)
+  input_address : in std_logic_vector(31 downto 0) := (others => '0');
+  output_address : out std_logic_vector(31 downto 0) := (others => '0')
 );
 end byte_adder;
 

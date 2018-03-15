@@ -45,6 +45,7 @@ begin
     exmem_out_mem_write <= exmem_in_mem_write;
     exmem_out_reg_write <= exmem_in_reg_write;
     exmem_out_mem_to_reg <= exmem_in_mem_to_reg;
+    exmem_out_alu_result <= exmem_in_alu_result;
     exmem_out_mem_write_data <= exmem_in_mem_write_data;
     exmem_out_dest_register <= exmem_in_dest_register;
   end if;
