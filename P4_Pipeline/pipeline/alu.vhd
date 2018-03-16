@@ -35,7 +35,7 @@ begin
       result <= std_logic_vector(to_signed(to_integer(signed(operand_a)) + to_integer(signed(operand_b)), result'length));
     when "00011" =>
       -- mult
-      temp <=  std_logic_vector(to_signed(to_integer(signed(operand_a)) * to_integer(signed(operand_b)), temp'length));
+      temp :=  std_logic_vector(to_signed(to_integer(signed(operand_a)) * to_integer(signed(operand_b)), temp'length));
       hi <= temp(63 downto 32);
       lo <= temp(31 downto 0);
       result <= lo;
@@ -77,7 +77,7 @@ begin
     when "01100" =>
       -- ori
       -- Need to zero extend ori according to MIPS data sheet
-      result <= operand_a or ((31 downto 16 => '0') & operand_b(12 downto 0));
+      result <= operand_a or ((31 downto 16 => '0') & operand_b(15 downto 0));
     when "01101" =>
       -- xori
       -- Need to zero extend xori according to MIPS data sheet

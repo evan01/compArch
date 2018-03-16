@@ -44,7 +44,7 @@ BEGIN
 				-- slti
 				-- i type
 			WHEN "001010" =>
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
@@ -57,7 +57,7 @@ BEGIN
 				-- andi
 				-- i type
 			WHEN "001100" =>
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
@@ -69,7 +69,7 @@ BEGIN
 				-- ori
 				-- i type
 			WHEN "001101" =>
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
@@ -81,7 +81,7 @@ BEGIN
 				-- xori
 				-- i type
 			WHEN "001110" =>
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
@@ -94,7 +94,7 @@ BEGIN
 				-- lui
 				-- i type
 			WHEN "001111" =>
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
