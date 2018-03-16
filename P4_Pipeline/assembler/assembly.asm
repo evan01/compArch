@@ -1,11 +1,29 @@
-#Computes the factorial of the input in $1
+addi $1, $0, 8
+addi $10, $0, 2
+addi $11, $0, 3
+addi $2, $0, 1
+addi $2, $0, 1
+addi $2, $0, 1
+sw $10, 4($1)
+div $11, $10
+addi $3, $0, $1
+sub $4, $10, $11
+mfhi $25
+mflo $24
+mult $10, $11
+lw $22, 4($1)
+mflo $27
 
-Fact: 	addi $1, $0, 5 #input, n=5
-		addi $2, $0, 1
-Loop:	slti $3, $1, 2
-		bne $3, $0, Skip
-		mult $1, $2
-		mflo $2
-		addi $1, $1, -1
-		j Loop
-Skip:	jr $31
+slt $31, $10, $11
+slti $30, $10, 1
+and $29, $3, $2
+or $28, $10, $11
+nor $21, $10, $11
+xor $20, $10, $11
+andi $19, $10, 0
+ori $18, $11, 1
+xori $17, $3, 3
+lui $16, 14
+sll $15, $27, 4
+srl $14, $27, 4
+sra $13, $27, 4
