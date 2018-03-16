@@ -6,11 +6,11 @@ use ieee.std_logic_textio.all;
 --NOTE, the majority of this code is taken from the Quartus Design and Synthesis handbook
 --as well as the faculty of Engineering at McGill University, Computer Architecture Course
 
-entity data_memory is 
+entity data_memory is
 	generic(
 		-- ram_size : INTEGER := 32768;
 		ram_size : integer := 8192; --This is in WORDS
-		clock_period : time := 1 ns	
+		clock_period : time := 1 ns
 	);
 	port(
 		clock: in std_logic;
@@ -40,11 +40,11 @@ begin
 		--Memory logic
 		if(rising_edge(clock)) then
 			if(memwrite ='1') then
-				ram(to_integer(unsigned(address))) <= writedata;
+				ram(to_integer(unsigned(address))/4) <= writedata;
 			end if;
 
 			if(memread = '1') then
-				readdata<= ram(to_integer(unsigned(address)));
+				readdata<= ram(to_integer(unsigned(address))/4);
 			end if;
 		end if;
 
@@ -58,7 +58,7 @@ begin
 		 file_open(memory_file_pointer, "memory.txt", WRITE_MODE);
             for i in 0 to ram_size-1 loop
                 --Write the data to the line
-                write(memory_line, ram(i)); 
+                write(memory_line, ram(i));
                 --Write the line to the file
                 writeline(memory_file_pointer, memory_line);
             end loop;
