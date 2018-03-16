@@ -19,9 +19,9 @@ end alu;
 architecture arch of alu is
 
 signal hi, lo : std_logic_vector(31 downto 0);
-signal temp : std_logic_vector(63 downto 0);
 begin
 operation : process(operand_a, operand_b, alu_opcode)
+variable temp : std_logic_vector(63 downto 0);
 begin
   case alu_opcode is
     when "00000" =>
