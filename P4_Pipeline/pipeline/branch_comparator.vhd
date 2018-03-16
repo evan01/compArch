@@ -33,10 +33,10 @@ begin
       end if;
     when "10111" =>
       -- bneq
-      if(unsigned(operand_a) = unsigned(operand_b)) then
-        take_branch := '0';
-      else
+      if(unsigned(operand_a) /= unsigned(operand_b)) then
         take_branch := '1';
+      else
+        take_branch := '0';
       end if;
     when others =>
       take_branch := '1';

@@ -24,36 +24,13 @@ ARCHITECTURE arch OF pipeline_controller IS
 BEGIN
 
 	operation : PROCESS (instruction)
-	
+
 	BEGIN
 		CASE instruction(31 downto 26) IS
-			-- add
-			-- R Type
-			WHEN "100000" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00000";
 
-			-- sub 
-			-- R type
-			WHEN "100010" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00001";
-
-				-- addi 
+				-- addi
 				-- I type
-			WHEN "001000" => 
+			WHEN "001000" =>
 				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
@@ -61,47 +38,12 @@ BEGIN
 				mem_write <= '0';
 				reg_write <= '1';
 				mem_to_reg <= '0';
-				alu_opcode <= "00010"; 
+				alu_opcode <= "00010";
 
-				-- mult
-				-- r type
-			WHEN "011000" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00011";
-
-				-- div
-				-- r type
-			WHEN "011010" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00100";
-
-				-- slt
-				-- r type
-			WHEN "101010" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00101";
 
 				-- slti
 				-- i type
-			WHEN "001010" => 
+			WHEN "001010" =>
 				reg_dst <= '1';
 				alu_src <= '1';
 				branch <= '0';
@@ -111,57 +53,10 @@ BEGIN
 				mem_to_reg <= '0';
 				alu_opcode <= "00110";
 
-				-- and
-				-- r type
-			WHEN "100100" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "00111";
-
-				-- or
-				-- r type
-			WHEN "100101" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "01000";
-
-				-- nor
-				-- r type
-			WHEN "100111" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "01001";
-
-				-- xor
-				-- r type
-			WHEN "100110" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "01010";
 
 				-- andi
 				-- i type
-			WHEN "001100" => 
+			WHEN "001100" =>
 				reg_dst <= '1';
 				alu_src <= '1';
 				branch <= '0';
@@ -173,7 +68,7 @@ BEGIN
 
 				-- ori
 				-- i type
-			WHEN "001101" => 
+			WHEN "001101" =>
 				reg_dst <= '1';
 				alu_src <= '1';
 				branch <= '0';
@@ -185,7 +80,7 @@ BEGIN
 
 				-- xori
 				-- i type
-			WHEN "001110" => 
+			WHEN "001110" =>
 				reg_dst <= '1';
 				alu_src <= '1';
 				branch <= '0';
@@ -195,33 +90,10 @@ BEGIN
 				mem_to_reg <= '0';
 				alu_opcode <= "01101";
 
-				-- mfhi
-				-- r type
-			WHEN "010000" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "01110";
-				
-				-- mflo
-				-- r type
-			WHEN "010010" => 
-				reg_dst <= '1';
-				alu_src <= '0';
-				branch <= '0';
-				mem_read <= '0';
-				mem_write <= '0';
-				reg_write <= '1';
-				mem_to_reg <= '0';
-				alu_opcode <= "01111";
-				
+
 				-- lui
 				-- i type
-			WHEN "001111" => 
+			WHEN "001111" =>
 				reg_dst <= '1';
 				alu_src <= '1';
 				branch <= '0';
@@ -232,9 +104,9 @@ BEGIN
 				alu_opcode <= "10000";
 
 				-- sll or srl
-			WHEN "000000" => 
+			WHEN "000000" =>
 				CASE instruction(5 downto 0) IS
-					WHEN "000000" => 
+					WHEN "000000" =>
 						-- sll
 						-- r type
 						reg_dst <= '1';
@@ -245,8 +117,8 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "10001";
- 
-					WHEN "000010" => 
+
+					WHEN "000010" =>
 						-- srl
 						-- r type
 						reg_dst <= '1';
@@ -257,9 +129,9 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "10010";
- 
- 
-					WHEN "000011" => 
+
+
+					WHEN "000011" =>
 						-- sra
 						-- r type
 						reg_dst <= '1';
@@ -269,11 +141,11 @@ BEGIN
 						mem_write <= '0';
 						reg_write <= '1';
 						mem_to_reg <= '0';
-						alu_opcode <= "10011"; 
- 
+						alu_opcode <= "10011";
+
 						-- jr
 						-- r type
-					WHEN "001000" => 
+					WHEN "001000" =>
 						reg_dst <= '1'; -- dont care
 						alu_src <= '0';
 						branch <= '1';
@@ -282,8 +154,140 @@ BEGIN
 						reg_write <= '0';
 						mem_to_reg <= '0'; -- dont care
 						alu_opcode <= "11001";
- 
-					WHEN OTHERS => 
+
+					-- add
+					-- R Type
+					WHEN "100000" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "00000";
+
+					-- sub
+					-- R type
+					WHEN "100010" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "00001";
+
+					-- mult
+					-- r type
+					WHEN "011000" =>
+					reg_dst <= '1';
+					alu_src <= '0';
+					branch <= '0';
+					mem_read <= '0';
+					mem_write <= '0';
+					reg_write <= '1';
+					mem_to_reg <= '0';
+					alu_opcode <= "00011";
+
+					-- div
+					-- r type
+					WHEN "011010" =>
+					reg_dst <= '1';
+					alu_src <= '0';
+					branch <= '0';
+					mem_read <= '0';
+					mem_write <= '0';
+					reg_write <= '1';
+					mem_to_reg <= '0';
+					alu_opcode <= "00100";
+
+					-- slt
+					-- r type
+					WHEN "101010" =>
+					reg_dst <= '1';
+					alu_src <= '0';
+					branch <= '0';
+					mem_read <= '0';
+					mem_write <= '0';
+					reg_write <= '1';
+					mem_to_reg <= '0';
+					alu_opcode <= "00101";
+
+					-- and
+					-- r type
+					WHEN "100100" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "00111";
+
+					-- or
+					-- r type
+					WHEN "100101" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "01000";
+
+						-- nor
+						-- r type
+					WHEN "100111" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "01001";
+
+						-- xor
+						-- r type
+					WHEN "100110" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "01010";
+
+						-- mfhi
+						-- r type
+					WHEN "010000" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "01110";
+
+						-- mflo
+						-- r type
+					WHEN "010010" =>
+						reg_dst <= '1';
+						alu_src <= '0';
+						branch <= '0';
+						mem_read <= '0';
+						mem_write <= '0';
+						reg_write <= '1';
+						mem_to_reg <= '0';
+						alu_opcode <= "01111";
+
+					WHEN OTHERS =>
 						reg_dst <= '0'; -- dont care
 						alu_src <= '0';
 						branch <= '0';
@@ -292,11 +296,11 @@ BEGIN
 						reg_write <= '0';
 						mem_to_reg <= '0'; -- dont care
 						alu_opcode <= "00000";
- 
-			END CASE; 
+
+			END CASE;
 			-- lw
 			-- i type
-			WHEN "100011" => 
+			WHEN "100011" =>
 				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
@@ -308,7 +312,7 @@ BEGIN
 
 				-- sw
 				-- i type
-			WHEN "101011" => 
+			WHEN "101011" =>
 				reg_dst <= '1'; -- dont care
 				alu_src <= '1';
 				branch <= '0';
@@ -320,7 +324,7 @@ BEGIN
 
 				-- beq
 				-- i type
-			WHEN "000100" => 
+			WHEN "000100" =>
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
 				branch <= '1';
@@ -332,7 +336,7 @@ BEGIN
 
 				-- bne
 				-- i type
-			WHEN "000101" => 
+			WHEN "000101" =>
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
 				branch <= '1';
@@ -344,7 +348,7 @@ BEGIN
 
 				-- j
 				-- j type
-			WHEN "000010" => 
+			WHEN "000010" =>
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
 				branch <= '1';
@@ -353,11 +357,11 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "11000";
- 
+
 
 				-- jal
 				-- j type
-			WHEN "000011" => 
+			WHEN "000011" =>
 				reg_dst <= '1'; -- dont care
 				alu_src <= '0';
 				branch <= '1';
@@ -367,8 +371,8 @@ BEGIN
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "11010";
 
- 
-			WHEN OTHERS => 
+
+			WHEN OTHERS =>
 				NULL;
 		END CASE;
 
