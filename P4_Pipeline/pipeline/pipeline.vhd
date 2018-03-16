@@ -70,8 +70,7 @@ component cpu_registers is
    write_data : in std_logic_vector (31 downto 0);
    read_data_1 : out std_logic_vector (31 downto 0);
    read_data_2 : out std_logic_vector (31 downto 0);
-   regwrite : in std_logic := '0';
-   regread : in std_logic := '0'
+   regwrite : in std_logic := '0'
  );
 end component;
 
@@ -272,7 +271,6 @@ end component;
 
 -- All the signals/wires for the wb stage
 signal wb_reg_write: std_logic;
-signal wb_reg_read: std_logic;
 signal wb_mem_to_reg: std_logic;
 signal wb_datamem_read_data: std_logic_vector(31 downto 0);
 signal wb_alu_result: std_logic_vector(31 downto 0);
@@ -290,6 +288,7 @@ component mux2to1 is
            X   : out STD_LOGIC_VECTOR (31 downto 0));
 end component;
 
+signal true : std_logic := '1';
 ----------------------------- END MISC ---------------------------------
 
 begin
@@ -338,12 +337,11 @@ begin
     write_registers_to_file => write_registers_to_file,
     read_register_1 => id_instruction(25 downto 21),
     read_register_2 => id_instruction(20 downto 16),
-    write_register => id_write_register,
-    write_data => id_write_data,
+    write_register => wb_dst_register,
+    write_data => wb_reg_write_data,
     read_data_1 => id_reg_read_data_1,
     read_data_2 => id_reg_read_data_2,
-    regwrite => wb_reg_write,
-    regread => wb_reg_read
+    regwrite => wb_reg_write
   );
 
   pipeline_ctlr: pipeline_controller PORT MAP(
@@ -491,8 +489,8 @@ alu_component: alu PORT MAP(
 
  mux_wb_memtoreg : mux2to1 PORT MAP(
    sel => wb_mem_to_reg,
-   input_0 => wb_datamem_read_data,
-   input_1 => wb_alu_result,
+   input_1 => wb_datamem_read_data,
+   input_0 => wb_alu_result,
    X => wb_reg_write_data
  );
 

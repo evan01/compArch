@@ -15,8 +15,7 @@ entity cpu_registers is
    write_data : in std_logic_vector (31 downto 0);
    read_data_1 : out std_logic_vector (31 downto 0);
    read_data_2 : out std_logic_vector (31 downto 0);
-   regwrite : in std_logic := '0';
-   regread : in std_logic := '0'
+   regwrite : in std_logic := '0'
    );
 end cpu_registers;
 
@@ -29,15 +28,18 @@ begin
 
 cpu_registers_process: process(clock)
 begin
+  IF(now < 1 ps)THEN
+				register_array(0) <= (others => '0');
+	end if;
+
+
   if (reset = '1') then
-     register_array <= (others => (others => '0'));
-  elsif (rising_edge(clock)) then
-    if (regread = '1') then
-      read_data_1 <= register_array(to_integer(unsigned(read_register_1)));
-      read_data_2 <= register_array(to_integer(unsigned(read_register_2)));
-    end if;
-  elsif(falling_edge(clock)) then
-    if (regwrite = '1') then
+     register_array <= (others => (others => 'U'));
+  elsif (falling_edge(clock)) then
+    read_data_1 <= register_array(to_integer(unsigned(read_register_1)));
+    read_data_2 <= register_array(to_integer(unsigned(read_register_2)));
+  elsif(rising_edge(clock)) then
+    if (regwrite = '1' and (write_register/="00000")) then
       register_array(to_integer(unsigned(write_register))) <= write_data;
     end if;
   end if;

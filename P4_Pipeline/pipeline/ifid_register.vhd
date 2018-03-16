@@ -8,7 +8,7 @@ port (
   ifid_write: in std_logic := '1';
   clock: in std_logic;
   ifid_in_incremented_pc_address: in std_logic_vector(31 downto 0);
-  ifid_out_incremented_pc_address: out std_logic_vector(31 downto 0);
+  ifid_out_incremented_pc_address: out std_logic_vector(31 downto 0) := (others => '0');
   ifid_in_instruction: in std_logic_vector(31 downto 0);
   ifid_out_instruction: out std_logic_vector(31 downto 0)
  );

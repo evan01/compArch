@@ -9,7 +9,7 @@ ENTITY pipeline_controller IS
 		instruction : IN std_logic_vector (31 DOWNTO 0);
 		reg_dst : OUT std_logic;
 		alu_src : OUT std_logic;
-		branch : OUT std_logic;
+		branch : OUT std_logic := '0';
 		mem_read : OUT std_logic;
 		mem_write : OUT std_logic;
 		reg_write : OUT std_logic;
@@ -20,19 +20,13 @@ END pipeline_controller;
 
 ARCHITECTURE arch OF pipeline_controller IS
 
-signal op_code : std_logic_vector (5 DOWNTO 0) := instruction(31 downto 26);
-signal funct : std_logic_vector (5 DOWNTO 0) := instruction(5 downto 0);
-
 
 BEGIN
-
-op_code <= instruction(31 downto 26);
-funct <= instruction(5 downto 0);
 
 	operation : PROCESS (instruction)
 	
 	BEGIN
-		CASE op_code IS
+		CASE instruction(31 downto 26) IS
 			-- add
 			-- R Type
 			WHEN "100000" => 
@@ -60,7 +54,7 @@ funct <= instruction(5 downto 0);
 				-- addi 
 				-- I type
 			WHEN "001000" => 
-				reg_dst <= '1';
+				reg_dst <= '0';
 				alu_src <= '1';
 				branch <= '0';
 				mem_read <= '0';
@@ -239,7 +233,7 @@ funct <= instruction(5 downto 0);
 
 				-- sll or srl
 			WHEN "000000" => 
-				CASE funct IS
+				CASE instruction(5 downto 0) IS
 					WHEN "000000" => 
 						-- sll
 						-- r type

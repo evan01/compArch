@@ -15,7 +15,7 @@ entity instruction_memory is
 	port(
 		clock: in std_logic;
 		pc : in std_logic_vector (31 downto 0);
-		instruction_out: out std_logic_vector (31 downto 0) := (others => '0')
+		instruction_out: out std_logic_vector (31 downto 0) := (31 downto 6 => '0')&"100000"
 	);
 end instruction_memory;
 
@@ -50,7 +50,7 @@ begin
 		--Memory logic
 		if(rising_edge(clock)) then
 			if(to_integer(unsigned(pc)) < 8192) then
-				instruction_out <= ram(to_integer(unsigned(pc)));
+				instruction_out <= ram(to_integer(unsigned(pc))/4);
 			end if;
 		end if;
 

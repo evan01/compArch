@@ -20,7 +20,7 @@ end branch_comparator;
 architecture arch of branch_comparator is
 begin
 
-zero_calc: process (operand_a, operand_b)
+zero_calc: process (operand_a, operand_b, alu_opcode)
 variable take_branch : std_logic;
 begin
   case alu_opcode is
