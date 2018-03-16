@@ -38,7 +38,7 @@ begin
 		end if;
 
 		--Memory logic
-		if(rising_edge(clock)) then
+		if(falling_edge(clock)) then
 			if(memwrite ='1') then
 				ram(to_integer(unsigned(address))/4) <= writedata;
 			end if;
