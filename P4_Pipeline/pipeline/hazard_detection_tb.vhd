@@ -14,7 +14,7 @@ architecture arch of hazard_detection_tb is
 			ifid_out_instruction : in  std_logic_vector(31 downto 0);
 			idex_out_rt_register : in  std_logic_vector(4 downto 0);
 			idex_out_mem_read    : in  std_logic;
-			stall                : in  std_logic;
+			branch_taken                : in  std_logic;
 			mux_flush            : out std_logic;
 			pc_write             : out std_logic;
 			fflush               : out std_logic
@@ -25,7 +25,7 @@ architecture arch of hazard_detection_tb is
 	signal ifid_out_instruction : std_logic_vector(31 downto 0) := "00000000000000000000000000000000";
 	signal idex_out_rt_register : std_logic_vector(4 downto 0)  := "00000";
 	signal idex_out_mem_read    : std_logic                     := '0';
-	signal stall                : std_logic                     := '0';
+	signal branch_taken         : std_logic                     := '0';
 	signal mux_flush            : std_logic                     := '0';
 	signal pc_write             : std_logic                     := '0';
 	signal fflush               : std_logic                     := '0';
@@ -37,7 +37,7 @@ begin
 			ifid_out_instruction,
 			idex_out_rt_register,
 			idex_out_mem_read,
-			stall,
+			branch_taken,
 			mux_flush,
 			pc_write,
 			fflush
@@ -49,7 +49,7 @@ begin
 		ifid_out_instruction <= (others => '0');
 		idex_out_rt_register <= (others => '0');
 		idex_out_mem_read    <= '0';
-		stall                <= '1';
+		branch_taken         <= '1';
 
 		wait;
 

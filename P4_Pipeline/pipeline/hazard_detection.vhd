@@ -6,8 +6,8 @@ ENTITY hazard_detection IS
 		ifid_out_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
 		idex_out_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		idex_out_mem_read    : IN  std_logic; -- if memory is being read
-		stall                : IN  std_logic;
-		mux_flush            : OUT std_logic; -- Outputs one always? TO CHECK
+		branch_taken         : IN  std_logic; -- input from the branch_comparator
+		mux_flush            : OUT std_logic; -- To add bubble
 		pc_write             : OUT std_logic; -- used to stall current instruction
 		fflush               : OUT std_logic -- Flush instructions if j type
 	);
@@ -19,9 +19,9 @@ ARCHITECTURE arch OF hazard_detection IS
 	SIGNAL input_instruction_type : instruction_type;
 
 BEGIN
-	PROCESS(input_instruction_type, ifid_out_instruction, idex_out_rt_register, idex_out_mem_read, stall)
+	PROCESS(input_instruction_type, ifid_out_instruction, idex_out_rt_register, idex_out_mem_read, branch_taken)
 	BEGIN
-		IF (stall = '1') THEN
+		IF (branch_taken = '1') THEN
 			pc_write  <= '1';
 			fflush    <= '0';
 			mux_flush <= '1';
