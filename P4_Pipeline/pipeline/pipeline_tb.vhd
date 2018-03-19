@@ -22,6 +22,7 @@ architecture arch of pipeline_tb is
     signal reset : std_logic :='0';
     signal write_data_to_file : std_logic :='0';
     signal write_registers_to_file : std_logic :='0';
+    signal testbench_complete : std_logic :='0';
     constant clk_period : time := 1 ns;
 
 begin
@@ -58,6 +59,7 @@ begin
             write_data_to_file <= '1';
             write_registers_to_file <= '1';
             wait for clk_period*100;
+            testbench_complete <= '1';
         end procedure;
 
         --RUN PROCEDURES HERE
