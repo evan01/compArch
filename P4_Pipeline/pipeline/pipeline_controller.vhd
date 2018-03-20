@@ -14,6 +14,7 @@ ENTITY pipeline_controller IS
 		mem_write : OUT std_logic;
 		reg_write : OUT std_logic;
 		mem_to_reg : OUT std_logic;
+		shift_instr : OUT std_logic;
 		alu_opcode : OUT std_logic_vector (4 DOWNTO 0)
 	);
 END pipeline_controller;
@@ -39,6 +40,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "00010";
+				shift_instr <= "0";
 
 
 				-- slti
@@ -52,6 +54,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "00110";
+				shift_instr <= "0";
 
 
 				-- andi
@@ -65,6 +68,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "01011";
+				shift_instr <= "0";
 
 				-- ori
 				-- i type
@@ -77,6 +81,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "01100";
+				shift_instr <= "0";
 
 				-- xori
 				-- i type
@@ -89,6 +94,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "01101";
+				shift_instr <= "0";
 
 
 				-- lui
@@ -102,6 +108,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '0';
 				alu_opcode <= "10000";
+				shift_instr <= "0";
 
 				-- sll or srl
 			WHEN "000000" =>
@@ -117,6 +124,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "10001";
+						shift_instr <= "1";
 
 					WHEN "000010" =>
 						-- srl
@@ -129,7 +137,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "10010";
-
+						shift_instr <= "1";
 
 					WHEN "000011" =>
 						-- sra
@@ -142,6 +150,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "10011";
+						shift_instr <= "1";
 
 						-- jr
 						-- r type
@@ -154,6 +163,7 @@ BEGIN
 						reg_write <= '0';
 						mem_to_reg <= '0'; -- dont care
 						alu_opcode <= "11001";
+						shift_instr <= "0";
 
 					-- add
 					-- R Type
@@ -166,6 +176,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "00000";
+						shift_instr <= "0";
 
 					-- sub
 					-- R type
@@ -178,6 +189,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "00001";
+						shift_instr <= "0";
 
 					-- mult
 					-- r type
@@ -190,6 +202,7 @@ BEGIN
 					reg_write <= '1';
 					mem_to_reg <= '0';
 					alu_opcode <= "00011";
+					shift_instr <= "0";
 
 					-- div
 					-- r type
@@ -202,6 +215,7 @@ BEGIN
 					reg_write <= '1';
 					mem_to_reg <= '0';
 					alu_opcode <= "00100";
+					shift_instr <= "0";
 
 					-- slt
 					-- r type
@@ -214,6 +228,7 @@ BEGIN
 					reg_write <= '1';
 					mem_to_reg <= '0';
 					alu_opcode <= "00101";
+					shift_instr <= "0";
 
 					-- and
 					-- r type
@@ -226,6 +241,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "00111";
+						shift_instr <= "0";
 
 					-- or
 					-- r type
@@ -238,6 +254,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "01000";
+						shift_instr <= "0";
 
 						-- nor
 						-- r type
@@ -250,10 +267,11 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "01001";
+						shift_instr <= "0";
 
 						-- xor
 						-- r type
-					WHEN "100110" =>
+					WHEN "101000" =>
 						reg_dst <= '1';
 						alu_src <= '0';
 						branch <= '0';
@@ -262,6 +280,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "01010";
+						shift_instr <= "0";
 
 						-- mfhi
 						-- r type
@@ -274,6 +293,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "01110";
+						shift_instr <= "0";
 
 						-- mflo
 						-- r type
@@ -286,6 +306,7 @@ BEGIN
 						reg_write <= '1';
 						mem_to_reg <= '0';
 						alu_opcode <= "01111";
+						shift_instr <= "0";
 
 					WHEN OTHERS =>
 						reg_dst <= '0'; -- dont care
@@ -296,6 +317,7 @@ BEGIN
 						reg_write <= '0';
 						mem_to_reg <= '0'; -- dont care
 						alu_opcode <= "00000";
+						shift_instr <= "0";
 
 			END CASE;
 			-- lw
@@ -309,6 +331,7 @@ BEGIN
 				reg_write <= '1';
 				mem_to_reg <= '1';
 				alu_opcode <= "10100";
+				shift_instr <= "0";
 
 				-- sw
 				-- i type
@@ -321,6 +344,7 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "10101";
+				shift_instr <= "0";
 
 				-- beq
 				-- i type
@@ -333,6 +357,7 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "10110";
+				shift_instr <= "0";
 
 				-- bne
 				-- i type
@@ -345,6 +370,7 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "10111";
+				shift_instr <= "0";
 
 				-- j
 				-- j type
@@ -357,6 +383,7 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "11000";
+				shift_instr <= "0";
 
 
 				-- jal
@@ -370,6 +397,7 @@ BEGIN
 				reg_write <= '0';
 				mem_to_reg <= '0'; -- dont care
 				alu_opcode <= "11010";
+				shift_instr <= "0";
 
 
 			WHEN OTHERS =>

@@ -86,6 +86,7 @@ component pipeline_controller is
    mem_write:  out std_logic;
    reg_write:  out std_logic;
    mem_to_reg :  out std_logic;
+   shift_instr : out std_logic;
    alu_opcode : out std_logic_vector (4 downto 0)
  );
 end component;
@@ -170,6 +171,7 @@ signal	id_mem_write_out : std_logic;
 signal	id_reg_write_out : std_logic;
 signal	id_mem_to_reg_out : std_logic;
 signal	id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
+signal  id_shift_instr: std_logic;
 
 ------------------------------ END ID STAGE ------------------------------
 
@@ -183,6 +185,8 @@ port (
   idex_out_alu_opcode: out std_logic_vector (4 downto 0);
   idex_in_ALUSrc: in std_logic;
   idex_out_ALUSrc: out std_logic;
+  idex_in_shift_instr: in std_logic;
+  idex_out_shift_instr: in std_logic;
 
   idex_in_mem_read: in std_logic;
   idex_out_mem_read: out std_logic;
@@ -239,6 +243,8 @@ signal ex_rd_register: std_logic_vector(4 downto 0);
 signal ex_dst_register: std_logic_vector(4 downto 0);
 signal ex_alu_result: std_logic_vector(31 downto 0);
 signal ex_alu_operand_b: std_logic_vector(31 downto 0);
+signal ex_alu_operand_a: std_logic_vector(31 downto 0);
+signal ex_shift_instr: std_logic;
 
 ------------------------------ END EX STAGE ------------------------------
 
@@ -400,6 +406,7 @@ begin
     mem_write=> id_mem_write,
     reg_write=> id_reg_write,
     mem_to_reg => id_mem_to_reg,
+    shift_instr => id_shift_instr,
     alu_opcode => id_alu_opcode
   );
 
@@ -460,6 +467,8 @@ idex_reg: idex_register PORT MAP(
   idex_out_alu_opcode => ex_alu_opcode,
   idex_in_ALUSrc => id_alu_src,
   idex_out_ALUSrc => ex_alu_src,
+  idex_in_shift_instr => id_shift_instr;
+  idex_out_shift_instr => ex_shift_instr;
 
   idex_in_mem_read => id_mem_read,
   idex_out_mem_read => ex_mem_read,
@@ -490,7 +499,7 @@ idex_reg: idex_register PORT MAP(
 ----------------------------- EX STAGE ---------------------------------
 
 alu_component: alu PORT MAP(
-   operand_a => ex_reg_read_data_1,
+   operand_a => ex_alu_operand_a,
    operand_b => ex_alu_operand_b,
    alu_opcode => ex_alu_opcode,
    result => ex_alu_result
@@ -501,6 +510,13 @@ alu_component: alu PORT MAP(
    input_0 => ex_reg_read_data_2,
    input_1 => ex_sign_extend_imm,
    X => ex_alu_operand_b
+ );
+
+ mux_alu_a: mux2to1 PORT MAP(
+   sel => ex_shift_instr,
+   input_0 => ex_reg_read_data_1,
+   input_1 => (31 downto 6 => '0') & ex_sign_extend_imm(11 downto 6),
+   X => ex_alu_operand_a
  );
 
  -- Destination register mux
