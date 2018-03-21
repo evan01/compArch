@@ -186,7 +186,7 @@ port (
   idex_in_ALUSrc: in std_logic;
   idex_out_ALUSrc: out std_logic;
   idex_in_shift_instr: in std_logic;
-  idex_out_shift_instr: in std_logic;
+  idex_out_shift_instr: out std_logic;
 
   idex_in_mem_read: in std_logic;
   idex_out_mem_read: out std_logic;
@@ -245,6 +245,7 @@ signal ex_alu_result: std_logic_vector(31 downto 0);
 signal ex_alu_operand_b: std_logic_vector(31 downto 0);
 signal ex_alu_operand_a: std_logic_vector(31 downto 0);
 signal ex_shift_instr: std_logic;
+signal ex_shift_amount: std_logic_vector(31 downto 0);
 
 ------------------------------ END EX STAGE ------------------------------
 
@@ -467,8 +468,8 @@ idex_reg: idex_register PORT MAP(
   idex_out_alu_opcode => ex_alu_opcode,
   idex_in_ALUSrc => id_alu_src,
   idex_out_ALUSrc => ex_alu_src,
-  idex_in_shift_instr => id_shift_instr;
-  idex_out_shift_instr => ex_shift_instr;
+  idex_in_shift_instr => id_shift_instr,
+  idex_out_shift_instr => ex_shift_instr,
 
   idex_in_mem_read => id_mem_read,
   idex_out_mem_read => ex_mem_read,
@@ -515,10 +516,11 @@ alu_component: alu PORT MAP(
  mux_alu_a: mux2to1 PORT MAP(
    sel => ex_shift_instr,
    input_0 => ex_reg_read_data_1,
-   input_1 => (31 downto 6 => '0') & ex_sign_extend_imm(11 downto 6),
+   input_1 => ex_shift_amount,
    X => ex_alu_operand_a
  );
 
+ ex_shift_amount <= (31 downto 5 => '0') & ex_sign_extend_imm(10 downto 6);
  -- Destination register mux
  ex_dst_register <= ex_rt_register when (ex_reg_dst = '0') else ex_rd_register;
 

@@ -16,7 +16,7 @@ port (
   idex_in_ALUSrc: in std_logic;
   idex_out_ALUSrc: out std_logic;
   idex_in_shift_instr: in std_logic;
-  idex_out_shift_instr: in std_logic;
+  idex_out_shift_instr: out std_logic;
 
   --Memory access stage control lines
   idex_in_mem_read: in std_logic;

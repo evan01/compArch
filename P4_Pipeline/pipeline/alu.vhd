@@ -93,13 +93,13 @@ begin
       result <= operand_b(15 downto 0) & std_logic_vector(to_unsigned(0, 16));
     when "10001" =>
       -- sll
-      result <= std_logic_vector(signed(operand_a) sll to_integer(unsigned(operand_b)));
+      result <= std_logic_vector(signed(operand_b) sll to_integer(unsigned(operand_a)));
     when "10010" =>
       -- srl
-      result <= std_logic_vector(signed(operand_a) srl to_integer(unsigned(operand_b)));
+      result <= std_logic_vector(signed(operand_b) srl to_integer(unsigned(operand_a)));
     when "10011" =>
       -- sra
-      result <= to_stdlogicvector(to_bitvector(operand_a) sra to_integer(signed(operand_b)));
+      result <= to_stdlogicvector(to_bitvector(operand_b) sra to_integer(signed(operand_a)));
     when "10100" =>
       -- lw
       -- Offset is in operand_b and is sign extended
