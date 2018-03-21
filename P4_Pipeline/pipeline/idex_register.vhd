@@ -42,8 +42,8 @@ port (
   idex_out_sign_extend_imm: out std_logic_vector(31 downto 0);
 
   -- Used for forwarding, uncomment when ready
-  -- idex_in_rs_register: in std_logic_vector(31 downto 0);
-  -- idex_out_rs_register: out std_logic_vector(31 downto 0);
+  idex_in_rs_register: in std_logic_vector(4 downto 0);
+  idex_out_rs_register: out std_logic_vector(4 downto 0);
 
   -- Need to propagate through rd and rt to determine destination register on certain write instructions
   idex_in_rt_register: in std_logic_vector(4 downto 0);

@@ -207,6 +207,9 @@ port (
   idex_in_sign_extend_imm: in std_logic_vector(31 downto 0);
   idex_out_sign_extend_imm: out std_logic_vector(31 downto 0);
 
+  idex_in_rs_register: in std_logic_vector(4 downto 0);
+  idex_out_rs_register: out std_logic_vector(4 downto 0);
+
   idex_in_rt_register: in std_logic_vector(4 downto 0);
   idex_out_rt_register: out std_logic_vector(4 downto 0);
 
@@ -226,6 +229,19 @@ component alu is
  );
 end component;
 
+component forwarding_unit is 
+ port (
+    forwardA: OUT std_logic_vector (1 downto 0);
+    forwardB: OUT std_logic_vector (1 downto 0);
+    ex_mem_regwrite: IN std_logic;
+    mem_wb_regwrite: IN std_logic;
+    ex_mem_rd: IN std_logic_vector (4 downto 0);
+    id_ex_rs: IN std_logic_vector (4 downto 0); 
+    id_ex_rt: IN std_logic_vector (4 downto 0);
+    mem_wb_rd: IN std_logic_vector (4 downto 0)
+ );
+end component;
+
 -- All the signals/wires for the ex stage
 signal ex_reg_read: std_logic;
 signal ex_reg_dst: std_logic;
@@ -238,6 +254,7 @@ signal ex_alu_opcode: std_logic_vector(4 downto 0);
 signal ex_reg_read_data_1: std_logic_vector(31 downto 0);
 signal ex_reg_read_data_2: std_logic_vector(31 downto 0);
 signal ex_sign_extend_imm: std_logic_vector(31 downto 0);
+signal ex_rs_register: std_logic_vector(4 downto 0);
 signal ex_rt_register: std_logic_vector(4 downto 0);
 signal ex_rd_register: std_logic_vector(4 downto 0);
 signal ex_dst_register: std_logic_vector(4 downto 0);
@@ -246,6 +263,11 @@ signal ex_alu_operand_b: std_logic_vector(31 downto 0);
 signal ex_alu_operand_a: std_logic_vector(31 downto 0);
 signal ex_shift_instr: std_logic;
 signal ex_shift_amount: std_logic_vector(31 downto 0);
+signal ex_forward_a: std_logic_vector(1 downto 0);
+signal ex_forward_b: std_logic_vector(1 downto 0);
+signal forward_mux_a_default: std_logic_vector(31 downto 0);
+signal forward_mux_b_default: std_logic_vector(31 downto 0);
+
 
 ------------------------------ END EX STAGE ------------------------------
 
@@ -341,6 +363,15 @@ component mux2to1 is
            input_1   : in  STD_LOGIC_VECTOR (31 downto 0);
            X   : out STD_LOGIC_VECTOR (31 downto 0));
 end component;
+
+component mux3to1 is
+    port (
+      sel : in  std_logic_vector(1 downto 0);
+      input_0  : in  std_logic_vector (31 downto 0);
+      input_1   : in  std_logic_vector (31 downto 0);
+      input_2   : in  std_logic_vector (31 downto 0);
+      X   : out std_logic_vector (31 downto 0));
+    end component;
 
 signal true : std_logic := '1';
 ----------------------------- END MISC ---------------------------------
@@ -490,6 +521,9 @@ idex_reg: idex_register PORT MAP(
   idex_in_sign_extend_imm =>id_sign_extend_imm,
   idex_out_sign_extend_imm => ex_sign_extend_imm,
 
+  idex_in_rs_register => id_instruction(25 downto 21),
+  idex_out_rs_register => ex_rs_register,
+
   idex_in_rt_register => id_instruction(20 downto 16),
   idex_out_rt_register => ex_rt_register,
 
@@ -510,15 +544,43 @@ alu_component: alu PORT MAP(
    sel => ex_alu_src,
    input_0 => ex_reg_read_data_2,
    input_1 => ex_sign_extend_imm,
-   X => ex_alu_operand_b
+   X => forward_mux_b_default
  );
 
  mux_alu_a: mux2to1 PORT MAP(
    sel => ex_shift_instr,
    input_0 => ex_reg_read_data_1,
    input_1 => ex_shift_amount,
-   X => ex_alu_operand_a
+   X => forward_mux_a_default
  );
+
+ forward: forwarding_unit PORT MAP(
+    forwardA => ex_forward_a,
+    forwardB => ex_forward_b,
+    ex_mem_regwrite => mem_reg_write,
+    mem_wb_regwrite => wb_reg_write,
+    ex_mem_rd => mem_dst_register,
+    id_ex_rs => ex_rs_register,
+    id_ex_rt => ex_rt_register,
+    mem_wb_rd => wb_dst_register
+ );
+
+ forward_mux_a: mux3to1 PORT MAP(
+    sel => ex_forward_a,
+    input_0 => forward_mux_a_default,
+    input_1 => wb_reg_write_data,
+    input_2 => mem_alu_result,
+    X => ex_alu_operand_a
+  );
+
+ forward_mux_b: mux3to1 PORT MAP(
+    sel => ex_forward_b,
+    input_0 => forward_mux_b_default,
+    input_1 => wb_reg_write_data,
+    input_2 => mem_alu_result,
+    X => ex_alu_operand_b
+  );
+
 
  ex_shift_amount <= (31 downto 5 => '0') & ex_sign_extend_imm(10 downto 6);
  -- Destination register mux
