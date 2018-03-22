@@ -73,6 +73,7 @@ begin
     idex_out_sign_extend_imm <= idex_in_sign_extend_imm;
     idex_out_rt_register <= idex_in_rt_register;
     idex_out_rd_register <= idex_in_rd_register;
+    idex_out_rs_register <= idex_in_rs_register;
   end if;
 end process;
 end arch;

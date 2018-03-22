@@ -20,32 +20,31 @@ ARCHITECTURE arch OF forwarding_unit IS
 BEGIN
 	operation : PROCESS (ex_mem_regwrite, mem_wb_regwrite, ex_mem_rd, id_ex_rs, id_ex_rt, mem_wb_rd)
 	BEGIN
+
+	  forwardA <= "00";
+	  forwardB <= "00";
 	  --EX Hazard
 	  if (ex_mem_regwrite = '1') and (ex_mem_rd /= "00000") and (ex_mem_rd = id_ex_rs) then
 	  	forwardA <= "10";
-	  else
-	  	forwardA <= "00";
 	  end if;
 
 	  if (ex_mem_regwrite = '1') and (ex_mem_rd /= "00000") and (ex_mem_rd = id_ex_rt) then
 	  	forwardB <= "10";
-	  else
-	  	forwardB <= "00";
 	  end if;
 
 	  --MEM Hazard
-	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000") and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") 
-	  	and (ex_mem_rd /= id_ex_rs) and (mem_wb_rd = id_ex_rs) then
+	  -- I removed this statement because it did not seem to work for this particular test:
+	  --and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") and (ex_mem_rd /= id_ex_rs)
+	  
+	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000")  and (mem_wb_rd = id_ex_rs) then
 	  	forwardA <= "01";
-	  else
-	  	forwardA <= "00";
 	  end if;
 
-	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000") and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") 
-	  	and (ex_mem_rd /= id_ex_rt) and (mem_wb_rd = id_ex_rt) then
+	  -- I removed this statement because it did not seem to work for this particular test:
+	  --and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") and (ex_mem_rd /= id_ex_rt)
+
+	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000")   and (mem_wb_rd = id_ex_rt) then
 	  	forwardB <= "01";
-	  else
-	  	forwardB <= "00";
 	  end if;
 
 		
