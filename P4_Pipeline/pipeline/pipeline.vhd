@@ -1,4 +1,3 @@
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -31,11 +30,11 @@ component byte_adder is
 end component;
 
 component instruction_memory is
-	port(
-		clock: in std_logic;
-		pc : in std_logic_vector (31 downto 0);
-		instruction_out: out std_logic_vector (31 downto 0)
-	);
+  port(
+    clock: in std_logic;
+    pc : in std_logic_vector (31 downto 0);
+    instruction_out: out std_logic_vector (31 downto 0)
+  );
 end component;
 
 -- All the signals/wires for the if stage
@@ -108,37 +107,37 @@ port (
 end component;
 
 component hazard_detection is
-	port (
-		ifid_out_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
-		idex_out_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
-		idex_out_mem_read    : IN  std_logic; -- if memory is being read
-		branch_taken         : IN  std_logic; -- input from the branch_comparator
-		mux_flush            : OUT std_logic; -- To add bubble
-		pc_write             : OUT std_logic; -- used to stall current instruction
-		fflush               : OUT std_logic -- Flush instructions if j type
-	);
+  port (
+    ifid_out_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
+    idex_out_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    idex_out_mem_read    : IN  std_logic; -- if memory is being read
+    branch_taken         : IN  std_logic; -- input from the branch_comparator
+    mux_flush            : OUT std_logic; -- To add bubble
+    pc_write             : OUT std_logic; -- used to stall current instruction
+    fflush               : OUT std_logic -- Flush instructions if j type
+  );
 end component;
 
 component hazard_detection_mux IS
-	port (
-		mux_flush : IN std_logic;
-		reg_dst_in : IN std_logic;
-		alu_src_in : IN std_logic;
-		branch_in : IN std_logic := '0';
-		mem_read_in : IN std_logic;
-		mem_write_in : IN std_logic;
-		reg_write_in : IN std_logic;
-		mem_to_reg_in : IN std_logic;
-		alu_opcode_in : IN std_logic_vector (4 DOWNTO 0);
-		reg_dst_out : OUT std_logic;
-		alu_src_out : OUT std_logic;
-		branch_out : OUT std_logic := '0';
-		mem_read_out : OUT std_logic;
-		mem_write_out : OUT std_logic;
-		reg_write_out : OUT std_logic;
-		mem_to_reg_out : OUT std_logic;
-		alu_opcode_out : OUT std_logic_vector (4 DOWNTO 0)
-	);
+  port (
+    mux_flush : IN std_logic;
+    reg_dst_in : IN std_logic;
+    alu_src_in : IN std_logic;
+    branch_in : IN std_logic := '0';
+    mem_read_in : IN std_logic;
+    mem_write_in : IN std_logic;
+    reg_write_in : IN std_logic;
+    mem_to_reg_in : IN std_logic;
+    alu_opcode_in : IN std_logic_vector (4 DOWNTO 0);
+    reg_dst_out : OUT std_logic;
+    alu_src_out : OUT std_logic;
+    branch_out : OUT std_logic := '0';
+    mem_read_out : OUT std_logic;
+    mem_write_out : OUT std_logic;
+    reg_write_out : OUT std_logic;
+    mem_to_reg_out : OUT std_logic;
+    alu_opcode_out : OUT std_logic_vector (4 DOWNTO 0)
+  );
 END component;
 
 -- All the signals/wires for the id stage
@@ -163,14 +162,14 @@ signal id_branch_target_address: std_logic_vector(31 downto 0);
 signal id_pc_write : std_logic;
 signal id_fflush : std_logic;
 signal id_mux_flush : std_logic;
-signal	id_reg_dst_out : std_logic;
-signal	id_alu_src_out : std_logic;
-signal	id_branch_out : std_logic;
-signal	id_mem_read_out : std_logic;
-signal	id_mem_write_out : std_logic;
-signal	id_reg_write_out : std_logic;
-signal	id_mem_to_reg_out : std_logic;
-signal	id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
+signal  id_reg_dst_out : std_logic;
+signal  id_alu_src_out : std_logic;
+signal  id_branch_out : std_logic;
+signal  id_mem_read_out : std_logic;
+signal  id_mem_write_out : std_logic;
+signal  id_reg_write_out : std_logic;
+signal  id_mem_to_reg_out : std_logic;
+signal  id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
 signal  id_shift_instr: std_logic;
 
 ------------------------------ END ID STAGE ------------------------------
@@ -299,15 +298,15 @@ end component;
 ----------------------------- MEM STAGE ---------------------------------
 
 component data_memory is
-	port(
-		clock: in std_logic;
-		memwrite: in std_logic;
+  port(
+    clock: in std_logic;
+    memwrite: in std_logic;
     memread: in std_logic;
     write_data_to_file: in std_logic;
-		address : in std_logic_vector(31 downto 0);
-		writedata: in std_logic_vector (31 downto 0);
-		readdata: out std_logic_vector (31 downto 0)
-	);
+    address : in std_logic_vector(31 downto 0);
+    writedata: in std_logic_vector (31 downto 0);
+    readdata: out std_logic_vector (31 downto 0)
+  );
 end component;
 
 -- All the signals/wires for the ex stage
@@ -400,10 +399,10 @@ begin
   );
 
   instruction_mem: instruction_memory PORT MAP (
-  		clock => clock,
-  		pc => if_pc_output_address,
-  		instruction_out => if_instruction
-  	);
+      clock => clock,
+      pc => if_pc_output_address,
+      instruction_out => if_instruction
+    );
 ----------------------------- END IF STAGE -----------------------------
 
   ifid_reg: ifid_register PORT MAP(
@@ -456,37 +455,37 @@ begin
   );
   
   hazard_detect: hazard_detection PORT MAP (
-		ifid_out_instruction => id_instruction,
-		idex_out_rt_register  => ex_rt_register,
-		idex_out_mem_read => ex_mem_read, 
-		branch_taken => id_pc_src,    
-		mux_flush => id_mux_flush,      
-		pc_write => id_pc_write,       
-		fflush => id_fflush      
-	);
+    ifid_out_instruction => id_instruction,
+    idex_out_rt_register  => ex_rt_register,
+    idex_out_mem_read => ex_mem_read, 
+    branch_taken => id_pc_src,    
+    mux_flush => id_mux_flush,      
+    pc_write => id_pc_write,       
+    fflush => id_fflush      
+  );
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
-		mux_flush => id_mux_flush,
-		reg_dst_in => id_reg_dst,
-		alu_src_in => id_alu_src,
-		branch_in => id_branch,
-		mem_read_in => id_mem_read,
-		mem_write_in => id_mem_write,
-		reg_write_in => id_reg_write,
-		mem_to_reg_in => id_mem_to_reg,
-		alu_opcode_in => id_alu_opcode,
-		reg_dst_out => id_reg_dst_out,
-		alu_src_out => id_alu_src_out,
-		branch_out => id_branch_out,
-		mem_read_out => id_mem_read_out, 
-		mem_write_out => id_mem_write_out,
-		reg_write_out => id_reg_write_out,
-		mem_to_reg_out => id_mem_to_reg_out, 
-		alu_opcode_out => id_alu_opcode_out
-	);
+    mux_flush => id_mux_flush,
+    reg_dst_in => id_reg_dst,
+    alu_src_in => id_alu_src,
+    branch_in => id_branch,
+    mem_read_in => id_mem_read,
+    mem_write_in => id_mem_write,
+    reg_write_in => id_reg_write,
+    mem_to_reg_in => id_mem_to_reg,
+    alu_opcode_in => id_alu_opcode,
+    reg_dst_out => id_reg_dst_out,
+    alu_src_out => id_alu_src_out,
+    branch_out => id_branch_out,
+    mem_read_out => id_mem_read_out, 
+    mem_write_out => id_mem_write_out,
+    reg_write_out => id_reg_write_out,
+    mem_to_reg_out => id_mem_to_reg_out, 
+    alu_opcode_out => id_alu_opcode_out
+  );
 
   --Calculate the branch target address for an instruction in the ID stage
-  id_branch_target_address <= std_logic_vector((unsigned(id_sign_extend_imm) sll 2) + unsigned(id_incremented_pc_address));
+  id_branch_target_address <= std_logic_vector((signed(id_sign_extend_imm) sll 2) + unsigned(id_incremented_pc_address));
 
 ----------------------------- END ID STAGE -----------------------------
 
@@ -613,14 +612,14 @@ alu_component: alu PORT MAP(
 ----------------------------- MEM STAGE ---------------------------------
 
   data_mem: data_memory PORT MAP(
-  		clock => clock,
-  		memwrite => mem_mem_write,
+      clock => clock,
+      memwrite => mem_mem_write,
       memread => mem_mem_read,
       write_data_to_file => write_data_to_file,
-  		address => mem_alu_result,
-  		writedata => mem_datamem_write_data,
-  		readdata => mem_datamem_read_data
-  	);
+      address => mem_alu_result,
+      writedata => mem_datamem_write_data,
+      readdata => mem_datamem_read_data
+    );
 
 ----------------------------- END MEM STAGE -----------------------------
 
