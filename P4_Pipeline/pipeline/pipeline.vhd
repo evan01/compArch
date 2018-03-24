@@ -485,7 +485,7 @@ hazard_detect_mux: hazard_detection_mux PORT MAP (
   );
 
   --Calculate the branch target address for an instruction in the ID stage
-  id_branch_target_address <= std_logic_vector((signed(id_sign_extend_imm) sll 2) + unsigned(id_incremented_pc_address));
+  id_branch_target_address <= std_logic_vector((signed(id_sign_extend_imm) sll 2) + signed(id_incremented_pc_address));
 
 ----------------------------- END ID STAGE -----------------------------
 
