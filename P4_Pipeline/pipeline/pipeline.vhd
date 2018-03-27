@@ -123,10 +123,10 @@ end component;
 
 component hazard_detection_mux IS
   port (
+    clock: in std_logic;
     mux_flush : IN std_logic;
     reg_dst_in : IN std_logic;
     alu_src_in : IN std_logic;
-    branch_in : IN std_logic := '0';
     mem_read_in : IN std_logic;
     mem_write_in : IN std_logic;
     reg_write_in : IN std_logic;
@@ -134,7 +134,6 @@ component hazard_detection_mux IS
     alu_opcode_in : IN std_logic_vector (4 DOWNTO 0);
     reg_dst_out : OUT std_logic;
     alu_src_out : OUT std_logic;
-    branch_out : OUT std_logic := '0';
     mem_read_out : OUT std_logic;
     mem_write_out : OUT std_logic;
     reg_write_out : OUT std_logic;
@@ -472,17 +471,17 @@ begin
     ifid_out_instruction => id_instruction,
     idex_out_rt_register  => ex_rt_register,
     idex_out_mem_read => ex_mem_read,
-    branch_taken => id_pc_src,
+    branch_taken => id_branch_taken,
     mux_flush => id_mux_flush,
     pc_write => id_stall_write,
     fflush => id_fflush
   );
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
+    clock => clock,
     mux_flush => id_mux_flush,
     reg_dst_in => id_reg_dst,
     alu_src_in => id_alu_src,
-    branch_in => id_branch,
     mem_read_in => id_mem_read,
     mem_write_in => id_mem_write,
     reg_write_in => id_reg_write,
@@ -490,7 +489,6 @@ hazard_detect_mux: hazard_detection_mux PORT MAP (
     alu_opcode_in => id_alu_opcode,
     reg_dst_out => id_reg_dst_out,
     alu_src_out => id_alu_src_out,
-    branch_out => id_branch_out,
     mem_read_out => id_mem_read_out,
     mem_write_out => id_mem_write_out,
     reg_write_out => id_reg_write_out,
@@ -523,23 +521,23 @@ id_regular_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 
 idex_reg: idex_register PORT MAP(
   clock => clock,
 
-  idex_in_RegDst => id_reg_dst,
+  idex_in_RegDst => id_reg_dst_out,
   idex_out_RegDst => ex_reg_dst,
-  idex_in_alu_opcode => id_alu_opcode,
+  idex_in_alu_opcode => id_alu_opcode_out,
   idex_out_alu_opcode => ex_alu_opcode,
-  idex_in_ALUSrc => id_alu_src,
+  idex_in_ALUSrc => id_alu_src_out,
   idex_out_ALUSrc => ex_alu_src,
   idex_in_shift_instr => id_shift_instr,
   idex_out_shift_instr => ex_shift_instr,
 
-  idex_in_mem_read => id_mem_read,
+  idex_in_mem_read => id_mem_read_out,
   idex_out_mem_read => ex_mem_read,
-  idex_in_mem_write => id_mem_write,
+  idex_in_mem_write => id_mem_write_out,
   idex_out_mem_write => ex_mem_write,
 
-  idex_in_reg_write => id_reg_write,
+  idex_in_reg_write => id_reg_write_out,
   idex_out_reg_write => ex_reg_write,
-  idex_in_mem_to_reg => id_mem_to_reg,
+  idex_in_mem_to_reg => id_mem_to_reg_out,
   idex_out_mem_to_reg => ex_mem_to_reg,
 
   idex_in_read_data_1 => id_reg_read_data_1,

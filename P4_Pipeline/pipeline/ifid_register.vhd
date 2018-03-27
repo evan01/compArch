@@ -22,7 +22,7 @@ begin
   if (rising_edge(clock)) then
     if (fflush = '1') then
       -- Insert bubble/nop (used during jump instruction)
-      ifid_out_instruction <= (others => '0');
+      ifid_out_instruction <= "0010000000000000000000000000000";
     else
       if(ifid_write = '1') then
         -- Propagate new data through, else keep the current data (if stall)
