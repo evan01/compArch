@@ -161,6 +161,7 @@ signal id_jump: std_logic;
 signal id_jump_sel: std_logic;
 signal id_target_address: std_logic_vector(31 downto 0);
 signal id_pc_src: std_logic;
+signal id_branch_taken: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
@@ -460,7 +461,7 @@ begin
     operand_a => id_reg_read_data_1,
     operand_b => id_reg_read_data_2,
     alu_opcode => id_alu_opcode,
-    branch_taken => id_pc_src
+    branch_taken => id_branch_taken
   );
 
   hazard_detect: hazard_detection PORT MAP (
@@ -506,6 +507,8 @@ mux_jump_jump_reg_selector : mux2to1 PORT MAP(
   input_1 => id_reg_read_data_1,
   X => id_jump_target_address
 );
+
+id_pc_src <= id_branch_taken or id_jump;
 
 --Calculate the branch target address for an instruction in the ID stage
 id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
