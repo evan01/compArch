@@ -157,10 +157,12 @@ signal id_mem_write: std_logic;
 signal id_reg_write: std_logic;
 signal id_mem_to_reg: std_logic;
 signal id_jump: std_logic;
+signal id_target_address: std_logic_vector(31 downto 0);
 signal id_pc_src: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
+signal id_jump_target_address: std_logic_vector(31 downto 0);
 signal id_pc_write : std_logic;
 signal id_fflush : std_logic;
 signal id_mux_flush : std_logic;
@@ -391,7 +393,7 @@ begin
   mux_pc_input : mux2to1 PORT MAP(
     sel => id_pc_src,
     input_0 => if_incremented_pc_address,
-    input_1 => id_branch_target_address,
+    input_1 => id_target_address,
     X => if_pc_input_address
   );
 
@@ -487,8 +489,16 @@ hazard_detect_mux: hazard_detection_mux PORT MAP (
     alu_opcode_out => id_alu_opcode_out
   );
 
-  --Calculate the branch target address for an instruction in the ID stage
-  id_branch_target_address <= std_logic_vector((signed(id_sign_extend_imm) sll 2) + signed(id_incremented_pc_address));
+mux_branch_jump_selector : mux2to1 PORT MAP(
+  sel => id_jump,
+  input_0 => id_branch_target_address,
+  input_1 => id_jump_target_address,
+  X => id_target_address
+);
+
+--Calculate the branch target address for an instruction in the ID stage
+id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
+id_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");
 
 ----------------------------- END ID STAGE -----------------------------
 
