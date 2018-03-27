@@ -23,12 +23,12 @@ BEGIN
 	BEGIN
 		IF (branch_taken = '1') THEN
 			pc_write  <= '1';
-			fflush    <= '0';
+			fflush    <= '1';
 			mux_flush <= '1';
 		END IF;
 
 		IF (idex_out_mem_read = '1') THEN
-			pc_write  <= '1';
+			pc_write  <= '0';
 			fflush    <= '0';
 			mux_flush <= '1';
 		END IF;

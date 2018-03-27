@@ -17,6 +17,7 @@ component program_counter is
  port (
    clock : in std_logic;
    reset : in std_logic;
+   pc_write: in std_logic;
    input_address : in std_logic_vector (31 downto 0) := (others => '0');
    output_address : out std_logic_vector(31 downto 0) := (others => '0')
    );
@@ -48,8 +49,8 @@ signal if_pc_sel: std_logic;
 
 component ifid_register is
 port (
-  fflush: in std_logic := '0';
-  ifid_write: in std_logic := '1';
+  fflush: in std_logic;
+  ifid_write: in std_logic;
   clock: in std_logic;
   ifid_in_incremented_pc_address: in std_logic_vector(31 downto 0);
   ifid_out_incremented_pc_address: out std_logic_vector(31 downto 0);
@@ -167,7 +168,7 @@ signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
 signal id_regular_jump_target_address: std_logic_vector(31 downto 0);
 signal id_jump_target_address: std_logic_vector(31 downto 0);
-signal id_pc_write : std_logic;
+signal id_stall_write : std_logic;
 signal id_fflush : std_logic;
 signal id_mux_flush : std_logic;
 signal id_reg_dst_out : std_logic;
@@ -390,6 +391,7 @@ begin
   pc: program_counter PORT MAP(
     clock => clock,
     reset => reset,
+    pc_write => id_stall_write,
     input_address => if_pc_input_address,
     output_address => if_pc_output_address
   );
@@ -415,6 +417,8 @@ begin
 
   ifid_reg: ifid_register PORT MAP(
     clock => clock,
+    fflush => id_pc_src,
+    ifid_write => id_stall_write,
     ifid_in_incremented_pc_address => if_incremented_pc_address,
     ifid_out_incremented_pc_address => id_incremented_pc_address,
     ifid_in_instruction => if_instruction,
@@ -470,7 +474,7 @@ begin
     idex_out_mem_read => ex_mem_read,
     branch_taken => id_pc_src,
     mux_flush => id_mux_flush,
-    pc_write => id_pc_write,
+    pc_write => id_stall_write,
     fflush => id_fflush
   );
 
