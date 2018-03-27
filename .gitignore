@@ -7,3 +7,10 @@ P4_Pipeline/pipeline/work/_info
 *.DS_Store
 
 P4_Pipeline/assembler/assembler_main/.idea
+*.qpg
+*.qdb
+*.qtl
+P4_Pipeline/pipeline/work_1/_vmake
+P4_Pipeline/pipeline/work_1/_info
+P4_Pipeline/pipeline/wlft2yiv9g
+P4_Pipeline/pipeline/wlftdm5gak
