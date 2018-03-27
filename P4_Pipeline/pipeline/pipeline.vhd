@@ -86,6 +86,7 @@ component pipeline_controller is
    reg_write:  out std_logic;
    mem_to_reg :  out std_logic;
    shift_instr : out std_logic;
+   jump : out std_logic;
    alu_opcode : out std_logic_vector (4 downto 0)
  );
 end component;
@@ -155,6 +156,7 @@ signal id_mem_read: std_logic;
 signal id_mem_write: std_logic;
 signal id_reg_write: std_logic;
 signal id_mem_to_reg: std_logic;
+signal id_jump: std_logic;
 signal id_pc_src: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
@@ -162,15 +164,15 @@ signal id_branch_target_address: std_logic_vector(31 downto 0);
 signal id_pc_write : std_logic;
 signal id_fflush : std_logic;
 signal id_mux_flush : std_logic;
-signal  id_reg_dst_out : std_logic;
-signal  id_alu_src_out : std_logic;
-signal  id_branch_out : std_logic;
-signal  id_mem_read_out : std_logic;
-signal  id_mem_write_out : std_logic;
-signal  id_reg_write_out : std_logic;
-signal  id_mem_to_reg_out : std_logic;
-signal  id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
-signal  id_shift_instr: std_logic;
+signal id_reg_dst_out : std_logic;
+signal id_alu_src_out : std_logic;
+signal id_branch_out : std_logic;
+signal id_mem_read_out : std_logic;
+signal id_mem_write_out : std_logic;
+signal id_reg_write_out : std_logic;
+signal id_mem_to_reg_out : std_logic;
+signal id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
+signal id_shift_instr: std_logic;
 
 ------------------------------ END ID STAGE ------------------------------
 
@@ -228,14 +230,14 @@ component alu is
  );
 end component;
 
-component forwarding_unit is 
+component forwarding_unit is
  port (
     forwardA: OUT std_logic_vector (1 downto 0);
     forwardB: OUT std_logic_vector (1 downto 0);
     ex_mem_regwrite: IN std_logic;
     mem_wb_regwrite: IN std_logic;
     ex_mem_rd: IN std_logic_vector (4 downto 0);
-    id_ex_rs: IN std_logic_vector (4 downto 0); 
+    id_ex_rs: IN std_logic_vector (4 downto 0);
     id_ex_rt: IN std_logic_vector (4 downto 0);
     mem_wb_rd: IN std_logic_vector (4 downto 0)
  );
@@ -438,6 +440,7 @@ begin
     reg_write=> id_reg_write,
     mem_to_reg => id_mem_to_reg,
     shift_instr => id_shift_instr,
+    jump => id_jump,
     alu_opcode => id_alu_opcode
   );
 
@@ -453,15 +456,15 @@ begin
     alu_opcode => id_alu_opcode,
     branch_taken => id_pc_src
   );
-  
+
   hazard_detect: hazard_detection PORT MAP (
     ifid_out_instruction => id_instruction,
     idex_out_rt_register  => ex_rt_register,
-    idex_out_mem_read => ex_mem_read, 
-    branch_taken => id_pc_src,    
-    mux_flush => id_mux_flush,      
-    pc_write => id_pc_write,       
-    fflush => id_fflush      
+    idex_out_mem_read => ex_mem_read,
+    branch_taken => id_pc_src,
+    mux_flush => id_mux_flush,
+    pc_write => id_pc_write,
+    fflush => id_fflush
   );
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
@@ -477,10 +480,10 @@ hazard_detect_mux: hazard_detection_mux PORT MAP (
     reg_dst_out => id_reg_dst_out,
     alu_src_out => id_alu_src_out,
     branch_out => id_branch_out,
-    mem_read_out => id_mem_read_out, 
+    mem_read_out => id_mem_read_out,
     mem_write_out => id_mem_write_out,
     reg_write_out => id_reg_write_out,
-    mem_to_reg_out => id_mem_to_reg_out, 
+    mem_to_reg_out => id_mem_to_reg_out,
     alu_opcode_out => id_alu_opcode_out
   );
 
