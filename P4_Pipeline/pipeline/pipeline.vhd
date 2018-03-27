@@ -87,6 +87,7 @@ component pipeline_controller is
    mem_to_reg :  out std_logic;
    shift_instr : out std_logic;
    jump : out std_logic;
+   jump_sel : out std_logic;
    alu_opcode : out std_logic_vector (4 downto 0)
  );
 end component;
@@ -157,11 +158,13 @@ signal id_mem_write: std_logic;
 signal id_reg_write: std_logic;
 signal id_mem_to_reg: std_logic;
 signal id_jump: std_logic;
+signal id_jump_sel: std_logic;
 signal id_target_address: std_logic_vector(31 downto 0);
 signal id_pc_src: std_logic;
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
+signal id_regular_jump_target_address: std_logic_vector(31 downto 0);
 signal id_jump_target_address: std_logic_vector(31 downto 0);
 signal id_pc_write : std_logic;
 signal id_fflush : std_logic;
@@ -443,6 +446,7 @@ begin
     mem_to_reg => id_mem_to_reg,
     shift_instr => id_shift_instr,
     jump => id_jump,
+    jump_sel => id_jump_sel,
     alu_opcode => id_alu_opcode
   );
 
@@ -496,9 +500,16 @@ mux_branch_jump_selector : mux2to1 PORT MAP(
   X => id_target_address
 );
 
+mux_jump_jump_reg_selector : mux2to1 PORT MAP(
+  sel => id_jump_sel,
+  input_0 => id_regular_jump_target_address,
+  input_1 => id_reg_read_data_1,
+  X => id_jump_target_address
+);
+
 --Calculate the branch target address for an instruction in the ID stage
 id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
-id_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");
+id_regular_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");
 
 ----------------------------- END ID STAGE -----------------------------
 

@@ -15,6 +15,7 @@ ENTITY pipeline_controller IS
 		reg_write : OUT std_logic;
 		mem_to_reg : OUT std_logic;
 		shift_instr : OUT std_logic;
+		jump_sel : OUT std_logic;
 		jump : OUT std_logic;
 		alu_opcode : OUT std_logic_vector (4 DOWNTO 0)
 	);
@@ -43,6 +44,7 @@ BEGIN
 				alu_opcode <= "00010";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 
 				-- slti
 				-- i type
@@ -57,6 +59,7 @@ BEGIN
 				alu_opcode <= "00110";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 
 				-- andi
 				-- i type
@@ -71,6 +74,7 @@ BEGIN
 				alu_opcode <= "01011";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- ori
 				-- i type
 			WHEN "001101" =>
@@ -84,6 +88,7 @@ BEGIN
 				alu_opcode <= "01100";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- xori
 				-- i type
 			WHEN "001110" =>
@@ -97,6 +102,7 @@ BEGIN
 				alu_opcode <= "01101";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 
 				-- lui
 				-- i type
@@ -111,6 +117,7 @@ BEGIN
 				alu_opcode <= "10000";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- sll or srl
 			WHEN "000000" =>
 				CASE instruction(5 downto 0) IS
@@ -127,6 +134,7 @@ BEGIN
 						alu_opcode <= "10001";
 						shift_instr <= '1';
 						jump <= '0';
+						jump_sel <= '0';
 					WHEN "000010" =>
 						-- srl
 						-- r type
@@ -140,6 +148,7 @@ BEGIN
 						alu_opcode <= "10010";
 						shift_instr <= '1';
 						jump <= '0';
+						jump_sel <= '0';
 					WHEN "000011" =>
 						-- sra
 						-- r type
@@ -153,19 +162,23 @@ BEGIN
 						alu_opcode <= "10011";
 						shift_instr <= '1';
 						jump <= '0';
+						jump_sel <= '0';
+						
 						-- jr
-						-- r type
+						-- i type
 					WHEN "001000" =>
 						reg_dst <= '1'; -- dont care
 						alu_src <= '0';
-						branch <= '1';
+						branch <= '0';
 						mem_read <= '0';
 						mem_write <= '0';
 						reg_write <= '0';
 						mem_to_reg <= '0'; -- dont care
 						alu_opcode <= "11001";
 						shift_instr <= '0';
-						jump <= '0';
+						jump <= '1';
+						jump_sel <= '1';
+
 					-- add
 					-- R Type
 					WHEN "100000" =>
@@ -179,6 +192,7 @@ BEGIN
 						alu_opcode <= "00000";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 					-- sub
 					-- R type
 					WHEN "100010" =>
@@ -192,6 +206,7 @@ BEGIN
 						alu_opcode <= "00001";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 					-- mult
 					-- r type
 					WHEN "011000" =>
@@ -205,6 +220,7 @@ BEGIN
 					alu_opcode <= "00011";
 					shift_instr <= '0';
 					jump <= '0';
+					jump_sel <= '0';
 					-- div
 					-- r type
 					WHEN "011010" =>
@@ -218,6 +234,7 @@ BEGIN
 					alu_opcode <= "00100";
 					shift_instr <= '0';
 					jump <= '0';
+					jump_sel <= '0';
 					-- slt
 					-- r type
 					WHEN "101010" =>
@@ -231,6 +248,7 @@ BEGIN
 					alu_opcode <= "00101";
 					shift_instr <= '0';
 					jump <= '0';
+					jump_sel <= '0';
 					-- and
 					-- r type
 					WHEN "100100" =>
@@ -244,6 +262,7 @@ BEGIN
 						alu_opcode <= "00111";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 					-- or
 					-- r type
 					WHEN "100101" =>
@@ -257,6 +276,7 @@ BEGIN
 						alu_opcode <= "01000";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 						-- nor
 						-- r type
 					WHEN "100111" =>
@@ -270,6 +290,7 @@ BEGIN
 						alu_opcode <= "01001";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 						-- xor
 						-- r type
 					WHEN "101000" =>
@@ -283,6 +304,7 @@ BEGIN
 						alu_opcode <= "01010";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 						-- mfhi
 						-- r type
 					WHEN "010000" =>
@@ -296,6 +318,7 @@ BEGIN
 						alu_opcode <= "01110";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 						-- mflo
 						-- r type
 					WHEN "010010" =>
@@ -309,6 +332,7 @@ BEGIN
 						alu_opcode <= "01111";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 					WHEN OTHERS =>
 						reg_dst <= '0'; -- dont care
 						alu_src <= '0';
@@ -320,6 +344,7 @@ BEGIN
 						alu_opcode <= "00000";
 						shift_instr <= '0';
 						jump <= '0';
+						jump_sel <= '0';
 			END CASE;
 			-- lw
 			-- i type
@@ -334,6 +359,7 @@ BEGIN
 				alu_opcode <= "10100";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- sw
 				-- i type
 			WHEN "101011" =>
@@ -347,6 +373,7 @@ BEGIN
 				alu_opcode <= "10101";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- beq
 				-- i type
 			WHEN "000100" =>
@@ -360,6 +387,7 @@ BEGIN
 				alu_opcode <= "10110";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 				-- bne
 				-- i type
 			WHEN "000101" =>
@@ -373,6 +401,7 @@ BEGIN
 				alu_opcode <= "10111";
 				shift_instr <= '0';
 				jump <= '0';
+				jump_sel <= '0';
 
 				-- j
 				-- j type
@@ -387,6 +416,7 @@ BEGIN
 				alu_opcode <= "11000";
 				shift_instr <= '0';
 				jump <= '1';
+				jump_sel <= '0';
 
 				-- jal
 				-- j type
@@ -401,6 +431,7 @@ BEGIN
 				alu_opcode <= "11010";
 				shift_instr <= '0';
 				jump <= '1';
+				jump_sel <= '0';
 
 			WHEN OTHERS =>
 				NULL;
