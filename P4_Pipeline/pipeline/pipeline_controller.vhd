@@ -16,7 +16,7 @@ ENTITY pipeline_controller IS
 		mem_to_reg : OUT std_logic;
 		shift_instr : OUT std_logic;
 		jump_sel : OUT std_logic;
-		jump : OUT std_logic;
+		jump : OUT std_logic := '0';
 		alu_opcode : OUT std_logic_vector (4 DOWNTO 0)
 	);
 END pipeline_controller;

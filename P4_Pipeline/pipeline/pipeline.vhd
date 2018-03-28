@@ -17,7 +17,7 @@ component program_counter is
  port (
    clock : in std_logic;
    reset : in std_logic;
-   pc_write: in std_logic;
+   pc_write: in std_logic := '1';
    input_address : in std_logic_vector (31 downto 0) := (others => '0');
    output_address : out std_logic_vector(31 downto 0) := (others => '0')
    );
@@ -111,10 +111,12 @@ end component;
 
 component hazard_detection is
   port (
-    ifid_out_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
-    idex_out_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    clock: in std_logic;
+    id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
+    ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    ex_rs_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     idex_out_mem_read    : IN  std_logic; -- if memory is being read
-    branch_taken         : IN  std_logic; -- input from the branch_comparator
     mux_flush            : OUT std_logic; -- To add bubble
     pc_write             : OUT std_logic; -- used to stall current instruction
     fflush               : OUT std_logic -- Flush instructions if j type
@@ -468,10 +470,12 @@ begin
   );
 
   hazard_detect: hazard_detection PORT MAP (
-    ifid_out_instruction => id_instruction,
-    idex_out_rt_register  => ex_rt_register,
+    clock => clock,
+    id_instruction => id_instruction,
+    ex_rd_register  => ex_rd_register,
+    ex_rt_register  => ex_rt_register,
+    ex_rs_register  => ex_rs_register,
     idex_out_mem_read => ex_mem_read,
-    branch_taken => id_branch_taken,
     mux_flush => id_mux_flush,
     pc_write => id_stall_write,
     fflush => id_fflush
