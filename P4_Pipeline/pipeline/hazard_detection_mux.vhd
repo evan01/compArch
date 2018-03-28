@@ -4,7 +4,6 @@ USE ieee.numeric_std.ALL;
 
 ENTITY hazard_detection_mux IS
 	PORT (
-		clock: in std_logic;
 		mux_flush : IN std_logic;
 		reg_dst_in : IN std_logic;
 		alu_src_in : IN std_logic;
@@ -26,29 +25,11 @@ END hazard_detection_mux;
 ARCHITECTURE arch OF hazard_detection_mux IS
 
 BEGIN
-	PROCESS (clock)
-	BEGIN
-		if(rising_edge(clock)) then
-			IF (mux_flush = '1') THEN
-				-- Adding outputs thay correspond to the bubble instrcution
-				reg_dst_out <= '0';
-				alu_src_out <= '1';
-				mem_read_out <= '0';
-				mem_write_out <= '0';
-				reg_write_out <= '0';
-				mem_to_reg_out <= '0';
-				alu_opcode_out <= "01011";
-
-			ELSE
-				reg_dst_out <= reg_dst_in;
-				alu_src_out <= alu_src_in;
-				mem_read_out <= mem_read_in;
-				mem_write_out <= mem_write_in;
-				reg_write_out <= reg_write_in;
-				mem_to_reg_out <= mem_to_reg_in;
-				alu_opcode_out <= alu_opcode_in;
-
-			END IF;
-		end if;
-	END PROCESS;
+reg_dst_out <= reg_dst_in when mux_flush ='0' else '0';
+alu_src_out <= alu_src_in when mux_flush ='0' else '1';
+mem_read_out <= mem_read_in when mux_flush ='0' else '0';
+mem_write_out <= mem_write_in when mux_flush ='0' else '0';
+reg_write_out <= reg_write_in when mux_flush ='0' else '0';
+mem_to_reg_out <= mem_to_reg_in when mux_flush ='0' else '0';
+alu_opcode_out <= alu_opcode_in when mux_flush ='0' else "01011";
 END arch;

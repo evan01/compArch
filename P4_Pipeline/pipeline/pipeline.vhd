@@ -125,7 +125,6 @@ end component;
 
 component hazard_detection_mux IS
   port (
-    clock: in std_logic;
     mux_flush : IN std_logic;
     reg_dst_in : IN std_logic;
     alu_src_in : IN std_logic;
@@ -482,7 +481,6 @@ begin
   );
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
-    clock => clock,
     mux_flush => id_mux_flush,
     reg_dst_in => id_reg_dst,
     alu_src_in => id_alu_src,
