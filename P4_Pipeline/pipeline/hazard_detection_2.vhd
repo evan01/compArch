@@ -17,14 +17,21 @@ END hazard_detection;
 
 
 ARCHITECTURE arch OF hazard_detection IS
-    TYPE instruction_type IS (
+
+	TYPE instr IS (
+		addi, slti, andi, ori, xori, lui, lw, sw,
+		s_ll, s_rl, s_ra, add, sub, mult, div, slt, nd, o_r, n_or, x_or, mfhi, mflo,
+		jr,jal,j,
+        beq, bne,
+        invalid
+	);
+
+    TYPE instr_type IS (
         r_type, 
         i_type, 
         j_type, 
         b_type
     );
-    signal input_instruction_type : instruction_type;
-    signal last_instruction_type : instruction_type;
     
     TYPE hazzard_state is (
         stall,
@@ -33,195 +40,105 @@ ARCHITECTURE arch OF hazard_detection IS
         normal,
         start
     );
-    signal current_state: hazzard_state := start;
+
+    signal state: hazzard_state := start;
     signal next_state: hazzard_state := normal;
+    signal instruction_type : instr_type;
+    signal instruction : instr;
+    signal last_instruction_type : instr_type;
 
+begin
+
+    instruction_type <=
+            i_type when       id_instruction(31 downto 26) = "001000" else
+            i_type when       id_instruction(31 downto 26) = "001000" else
+            i_type when       id_instruction(31 downto 26) = "001100" else
+            i_type when       id_instruction(31 downto 26) = "001101" else
+            i_type when       id_instruction(31 downto 26) = "001110" else
+            i_type when       id_instruction(31 downto 26) = "001111" else
+            j_type when       id_instruction(31 downto 26) = "000000" and id_instruction(5 downto 0) = "001000" else
+            i_type when       id_instruction(31 downto 26) = "100011" else
+            i_type when       id_instruction(31 downto 26) = "101011" else
+            b_type when       id_instruction(31 downto 26) = "000100" else
+            b_type when       id_instruction(31 downto 26) = "000101" else
+            j_type when       id_instruction(31 downto 26) = "000010" else
+            j_type when       id_instruction(31 downto 26) = "000011" else
+            r_type;
+
+    instruction <=
+        addi    when      id_instruction(31 downto 26) = "001000"    else
+        slti    when      id_instruction(31 downto 26) = "001010"    else
+        andi    when      id_instruction(31 downto 26) = "001100"    else
+        ori     when      id_instruction(31 downto 26) = "001101"    else
+        xori    when      id_instruction(31 downto 26) = "001110"    else
+        lui     when      id_instruction(31 downto 26) = "001111"    else
+        s_ll    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "000000" else
+        s_rl    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "000010" else
+        s_ra    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "000011" else
+        jr      when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "001000" else
+        add     when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100000" else
+        sub     when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100010" else
+        mult    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "011000" else
+        div     when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "011010" else
+        slt     when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "101010" else
+        nd      when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100100" else
+        o_r     when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100101" else
+        n_or    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100111" else
+        x_or    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "100110" else
+        mfhi    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "010000" else
+        mflo    when      id_instruction(31 downto 26) = "000000"    and id_instruction(5 downto 0) =  "010010" else
+        lw      when      id_instruction(31 downto 26) = "100011"    else
+        sw      when      id_instruction(31 downto 26) = "101011"    else
+        beq     when      id_instruction(31 downto 26) = "000100"    else
+        bne     when      id_instruction(31 downto 26) = "000101"    else
+        j       when      id_instruction(31 downto 26) = "000010"    else
+        jal     when      id_instruction(31 downto 26) = "000011"    else
+        invalid;
+
+    process(id_instruction, instruction, instruction_type) -- Does this handle the case where you get 2 of the same instruction in a row??? Use PC?
+ 
+    begin
+        state <= bubble;
+    end process;
     
-
-    --DETERMINE THE INSTRUCTION TYPE
-    process(id_instruction)
+    
+    
+    
+    --ONLY the outputs/state should be determined by the clock, and held for 1 period.
+    process(state)
     begin
-        CASE id_instruction(31 DOWNTO 26) IS
+        case state is 
+            when start =>
+                pc_write <= '1';
+                fflush <= '0';
+                mux_flush <= '0';
 
-			-- addi
-			-- I type
-			WHEN "001000" =>
-				input_instruction_type <= i_type;
-			-- slti
-			-- i type
-			WHEN "001010" =>
-				input_instruction_type <= i_type;
+            when normal =>
+                pc_write <= '1';
+                fflush <= '0';
+                mux_flush <= '0';
 
-			-- andi
-			-- i type
-			WHEN "001100" =>
-				input_instruction_type <= i_type;
-			-- ori
-			-- i type
-			WHEN "001101" =>
-				input_instruction_type <= i_type;
-			-- xori
-			-- i type
-			WHEN "001110" =>
-				input_instruction_type <= i_type;
-			-- lui
-			-- i type
-			WHEN "001111" =>
-				input_instruction_type <= i_type;
-			-- sll or srl
-			WHEN "000000" =>
-				CASE id_instruction(5 DOWNTO 0) IS
-					WHEN "000000" =>
-						-- sll
-						-- r type
-						input_instruction_type <= r_type;
+            when flush =>
+                fflush <= '1';
+                mux_flush <= '0';
+                pc_write <= '0';
+                
+            when bubble =>
+                fflush <= '1';
+                mux_flush <= '1';
+                pc_write <= '0';
 
-					WHEN "000010" =>
-						-- srl
-						-- r type
-						input_instruction_type <= r_type;
-					WHEN "000011" =>
-						-- sra
-						-- r type
-						input_instruction_type <= r_type;
+            when stall =>
+                pc_write <= '0';
+                fflush <= '0';
+                mux_flush <= '0';
 
-					-- jr
-					-- r type
-					WHEN "001000" =>
-						input_instruction_type <= j_type;
-
-					-- add
-					-- R Type
-					WHEN "100000" =>
-						input_instruction_type <= r_type;
-
-					-- sub
-					-- R type
-					WHEN "100010" =>
-						input_instruction_type <= r_type;
-
-					-- mult
-					-- r type
-					WHEN "011000" =>
-						input_instruction_type <= r_type;
-
-					-- div
-					-- r type
-					WHEN "011010" =>
-						input_instruction_type <= r_type;
-					-- slt
-					-- r type
-					WHEN "101010" =>
-						input_instruction_type <= r_type;
-					-- and
-					-- r type
-					WHEN "100100" =>
-						input_instruction_type <= r_type;
-
-					-- or
-					-- r type
-					WHEN "100101" =>
-						input_instruction_type <= r_type;
-
-					-- nor
-					-- r type
-					WHEN "100111" =>
-						input_instruction_type <= r_type;
-
-					-- xor
-					-- r type
-					WHEN "100110" =>
-						input_instruction_type <= r_type;
-
-					-- mfhi
-					-- r type
-					WHEN "010000" =>
-						input_instruction_type <= r_type;
-
-					-- mflo
-					-- r type
-					WHEN "010010" =>
-						input_instruction_type <= r_type;
-
-					-- Cannot assign null, assigning r_type since they are the majority type
-					WHEN OTHERS =>
-						input_instruction_type <= r_type;
-
-				END CASE;
-			-- lw
-			-- i type
-			WHEN "100011" =>
-				input_instruction_type <= i_type;
-
-			-- sw
-			-- i type
-			WHEN "101011" =>
-				input_instruction_type <= i_type;
-
-			-- beq
-			-- i type
-			WHEN "000100" =>
-				input_instruction_type <= b_type;
-
-			-- bne
-			-- i type
-			WHEN "000101" =>
-				input_instruction_type <= b_type;
-
-			-- j
-			-- j type
-			WHEN "000010" =>
-				input_instruction_type <= j_type;
-			-- jal
-			-- j type
-			WHEN "000011" =>
-				input_instruction_type <= j_type;
-
-			-- Cannot assign null, assigning r_type since they are the majority type
-			WHEN OTHERS =>
-				input_instruction_type <= r_type;
-
-		END CASE;
+            when others =>
+                pc_write <= '1';
+                fflush <= '0';
+                mux_flush <= '0';
+        end case;
     end process;
-
-    --ONLY the output state should be determined by the clock
-    process(clock)
-    begin
-        if(rising_edge(clock))
-            case (current_state) is 
-                when start =>
-                    pc_write <= '1';
-                    fflush <= '0';
-                    mux_flush <= '0';
-
-                when normal =>
-                    pc_write <= '1';
-                    fflush <= '0';
-                    mux_flush <= '0';
-
-                when flush =>
-                    fflush <= '1';
-                    mux_flush <= '0';
-                    pc_write <= '0';
-                    
-                when bubble =>
-                    fflush <= '1';
-                    mux_fluxh <= '1';
-                    pc_write <= '0';
-
-                when stall =>
-                    pc_write <= '0';
-                    fflush <= '0';
-                    mux_flush <= '0';
-
-                when others =>
-                    pc_write <= '1';
-                    fflush <= '0';
-                    mux_flush <= '0';
-            end case;
-            state <= next_state;
-        end if;
-    end process;
-
+ 
 
 END arch;
