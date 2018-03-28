@@ -111,7 +111,6 @@ end component;
 
 component hazard_detection is
   port (
-    clock: in std_logic;
     id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
     ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
@@ -469,7 +468,6 @@ begin
   );
 
   hazard_detect: hazard_detection PORT MAP (
-    clock => clock,
     id_instruction => id_instruction,
     ex_rd_register  => ex_rd_register,
     ex_rt_register  => ex_rt_register,
