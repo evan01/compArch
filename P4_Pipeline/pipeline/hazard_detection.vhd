@@ -178,7 +178,7 @@ BEGIN
 			first_instruction <= '0';
 		else
       if (ex_mem_read = '1') THEN
-        if(id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register) THEN
+        if(ex_rt_register /= "00000" and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) THEN
           pc_write  <= '0';
           idex_flush <= '1';
         end if;
@@ -188,12 +188,12 @@ BEGIN
           -- if we're writing to the cpu reg and the destination is what we need for the branch, stall
           if(ex_reg_write = '1' and ex_mem_to_reg='0') then
             -- if last instruction was r type and the register is used in the branch, stall
-            if(last_instruction_type = r_type and (id_instruction(25 downto 21) = ex_rd_register or id_instruction(20 downto 16) = ex_rd_register)) then
+            if(ex_rd_register /= "00000" and last_instruction_type = r_type and (id_instruction(25 downto 21) = ex_rd_register or id_instruction(20 downto 16) = ex_rd_register)) then
               pc_write  <= '0';
               idex_flush <= '1';
             end if;
             -- if last instruction was i type and the register is used in the branch, stall
-            if(last_instruction_type = i_type and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) then
+            if(ex_rt_register /= "00000" and last_instruction_type = i_type and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) then
               pc_write  <= '0';
               idex_flush <= '1';
             end if;
