@@ -113,11 +113,12 @@ component hazard_detection is
   port (
     id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
     ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_mem_read: in std_logic;
-    idex_out_mem_read    : IN  std_logic; -- if memory is being read
+    ex_reg_write    : IN  std_logic; -- if memory is being read
+    ex_mem_to_reg    : IN  std_logic; -- if memory is being read
     idex_flush            : OUT std_logic; -- To add bubble
-    pc_write             : OUT std_logic; -- used to stall current instruction
-    fflush               : OUT std_logic -- Flush instructions if j type
+    pc_write             : OUT std_logic -- used to stall current instruction
   );
 end component;
 
@@ -161,6 +162,10 @@ signal id_jump_sel: std_logic;
 signal id_target_address: std_logic_vector(31 downto 0);
 signal id_pc_src: std_logic;
 signal id_branch_taken: std_logic;
+signal id_branch_reg_forwarding_sel_1: std_logic;
+signal id_branch_reg_forwarding_sel_2: std_logic;
+signal id_branch_comparator_input_1: std_logic_vector(31 downto 0);
+signal id_branch_comparator_input_2: std_logic_vector(31 downto 0);
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
@@ -458,10 +463,31 @@ begin
     output_32 => id_sign_extend_imm
   );
 
+  id_branch_reg_forwarding_sel_1 <= '1' when (mem_dst_register /= "00000" and (id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101")
+  and id_instruction(25 downto 21) = mem_dst_register) else '0';
+
+  id_branch_reg_forwarding_sel_2 <= '1' when (mem_dst_register /= "00000" and (id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101")
+  and id_instruction(20 downto 16) = mem_dst_register) else '0';
+
+  branc_comparator_mux1: mux2to1 PORT MAP(
+    sel => id_branch_reg_forwarding_sel_1,
+    input_0 => id_reg_read_data_1,
+    input_1 => mem_alu_result,
+    X => id_branch_comparator_input_1
+  );
+
+  branc_comparator_mux2: mux2to1 PORT MAP(
+    sel => id_branch_reg_forwarding_sel_2,
+    input_0 => id_reg_read_data_2,
+    input_1 => mem_alu_result,
+    X =>id_branch_comparator_input_2
+  );
+
+
   branch_comp: branch_comparator PORT MAP(
     branch => id_branch,
-    operand_a => id_reg_read_data_1,
-    operand_b => id_reg_read_data_2,
+    operand_a => id_branch_comparator_input_1,
+    operand_b => id_branch_comparator_input_2,
     alu_opcode => id_alu_opcode,
     branch_taken => id_branch_taken
   );
@@ -469,11 +495,14 @@ begin
   hazard_detect: hazard_detection PORT MAP (
     id_instruction => id_instruction,
     ex_rt_register  => ex_rt_register,
+    ex_rd_register => ex_rd_register,
+    ex_reg_write => ex_reg_write,
+    ex_mem_to_reg => ex_mem_to_reg,
     ex_mem_read => ex_mem_read,
     idex_flush => id_idex_flush,
-    pc_write => id_stall_write,
-    fflush => id_fflush
+    pc_write => id_stall_write
   );
+
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
     idex_flush => id_idex_flush,

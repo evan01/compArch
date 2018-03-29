@@ -5,10 +5,12 @@ ENTITY hazard_detection IS
 	PORT(
 		id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
 		ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+		ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		ex_mem_read    : IN  std_logic; -- if memory is being read
+		ex_reg_write    : IN  std_logic; -- if memory is being read
+		ex_mem_to_reg    : IN  std_logic; -- if memory is being read
 		idex_flush            : OUT std_logic := '0'; -- To add bubble
-		pc_write             : OUT std_logic := '1'; -- used to stall current instruction
-		fflush               : OUT std_logic := '0' -- Flush instructions if j type
+		pc_write             : OUT std_logic := '1' -- used to stall current instruction
 	);
 END hazard_detection;
 
@@ -166,23 +168,47 @@ ARCHITECTURE arch OF hazard_detection IS
 		END CASE;
 	END get_instruction_type;
 
-
 BEGIN
 
-	PROCESS(id_instruction, ex_mem_read, ex_rt_register)
+	PROCESS(id_instruction, ex_mem_read, ex_reg_write, ex_mem_to_reg)
 	variable current_instruction_type : instruction_type;
 	BEGIN
+    current_instruction_type := get_instruction_type(id_instruction);
 		if (first_instruction = '1') then
 			first_instruction <= '0';
 		else
       if (ex_mem_read = '1') THEN
         if(id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register) THEN
           pc_write  <= '0';
-          fflush    <= '0';
           idex_flush <= '1';
         end if;
-      end if;
-		END IF;
-	END PROCESS;
+      else
+        -- for branching
+        if (current_instruction_type = b_type) then
+          -- if we're writing to the cpu reg and the destination is what we need for the branch, stall
+          if(ex_reg_write = '1' and ex_mem_to_reg='0') then
+            -- if last instruction was r type and the register is used in the branch, stall
+            if(last_instruction_type = r_type and (id_instruction(25 downto 21) = ex_rd_register or id_instruction(20 downto 16) = ex_rd_register)) then
+              pc_write  <= '0';
+              idex_flush <= '1';
+            end if;
+            -- if last instruction was i type and the register is used in the branch, stall
+            if(last_instruction_type = i_type and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) then
+              pc_write  <= '0';
+              idex_flush <= '1';
+            end if;
+          else
+            pc_write  <= '1';
+            idex_flush <= '0';
+          end if;
+        else
+          pc_write  <= '1';
+          idex_flush <= '0';
+        end if;
+		end if;
+    last_instruction_type <= current_instruction_type;
+    second_last_instruction_type <= last_instruction_type;
+  end if;
+END PROCESS;
 
 END arch;
