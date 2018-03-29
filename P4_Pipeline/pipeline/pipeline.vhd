@@ -116,7 +116,7 @@ component hazard_detection is
     ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_rs_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     idex_out_mem_read    : IN  std_logic; -- if memory is being read
-    mux_flush            : OUT std_logic; -- To add bubble
+    idex_flush            : OUT std_logic; -- To add bubble
     pc_write             : OUT std_logic; -- used to stall current instruction
     fflush               : OUT std_logic -- Flush instructions if j type
   );
@@ -124,7 +124,7 @@ end component;
 
 component hazard_detection_mux IS
   port (
-    mux_flush : IN std_logic;
+    idex_flush : IN std_logic;
     reg_dst_in : IN std_logic;
     alu_src_in : IN std_logic;
     mem_read_in : IN std_logic;
@@ -169,7 +169,7 @@ signal id_regular_jump_target_address: std_logic_vector(31 downto 0);
 signal id_jump_target_address: std_logic_vector(31 downto 0);
 signal id_stall_write : std_logic;
 signal id_fflush : std_logic;
-signal id_mux_flush : std_logic;
+signal id_idex_flush : std_logic;
 signal id_reg_dst_out : std_logic;
 signal id_alu_src_out : std_logic;
 signal id_branch_out : std_logic;
@@ -473,13 +473,13 @@ begin
     ex_rt_register  => ex_rt_register,
     ex_rs_register  => ex_rs_register,
     idex_out_mem_read => ex_mem_read,
-    mux_flush => id_mux_flush,
+    idex_flush => id_idex_flush,
     pc_write => id_stall_write,
     fflush => id_fflush
   );
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
-    mux_flush => id_mux_flush,
+    idex_flush => id_idex_flush,
     reg_dst_in => id_reg_dst,
     alu_src_in => id_alu_src,
     mem_read_in => id_mem_read,

@@ -8,7 +8,7 @@ ENTITY hazard_detection IS
 		ex_rs_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		idex_out_mem_read    : IN  std_logic; -- if memory is being read
-		mux_flush            : OUT std_logic := '0'; -- To add bubble
+		idex_flush            : OUT std_logic := '0'; -- To add bubble
 		pc_write             : OUT std_logic := '1'; -- used to stall current instruction
 		fflush               : OUT std_logic := '0' -- Flush instructions if j type
 	);
@@ -180,7 +180,7 @@ BEGIN
 			IF (idex_out_mem_read = '1') THEN
 				pc_write  <= '0';
 				fflush    <= '0';
-				mux_flush <= '1';
+				idex_flush <= '1';
 			END IF;
 			current_instruction_type := get_instruction_type(id_instruction);
 			CASE current_instruction_type IS
@@ -190,13 +190,13 @@ BEGIN
 						IF ((id_instruction(25 DOWNTO 21) = ex_rd_register or id_instruction(20 DOWNTO 16) = ex_rd_register) and ex_rd_register /= "00000") THEN
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					elsif last_instruction_type = i_type then
 						IF ((id_instruction(25 DOWNTO 21) = ex_rt_register or id_instruction(20 DOWNTO 16) = ex_rt_register) and ex_rt_register /= "00000") THEN
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					end if;
 
@@ -205,13 +205,13 @@ BEGIN
 						IF (id_instruction(25 DOWNTO 21) = ex_rd_register and ex_rd_register /= "00000") THEN --Compare Rd in EX stage to Rs in ID stage
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					elsif last_instruction_type = i_type then
 						IF (id_instruction(25 DOWNTO 21) = ex_rt_register and ex_rt_register /= "00000") THEN --Compare Rd in EX stage to Rs in ID stage
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					end if;
 
@@ -221,26 +221,26 @@ BEGIN
 						IF ((id_instruction(25 DOWNTO 21) = ex_rd_register or id_instruction(20 DOWNTO 16) = ex_rd_register) and ex_rd_register /= "00000") THEN
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					elsif last_instruction_type = i_type then
 						--Compare Rd in EX stage to Rs in ID stage
 						IF ((id_instruction(25 DOWNTO 21) = ex_rt_register or id_instruction(20 DOWNTO 16) = ex_rt_register) and ex_rt_register /= "00000") THEN
 							pc_write  <= '0';
 							fflush    <= '0';
-							mux_flush <= '1';
+							idex_flush <= '1';
 						END IF;
 					end if;
 
 				WHEN j_type =>
 					pc_write  <= '1';
 					fflush    <= '1';
-					mux_flush <= '0';
+					idex_flush <= '0';
 
 				WHEN OTHERS =>
 					pc_write  <= '1';
 					fflush    <= '0';
-					mux_flush <= '0';
+					idex_flush <= '0';
 			END CASE;
 
       last_instruction_type <= current_instruction_type;
