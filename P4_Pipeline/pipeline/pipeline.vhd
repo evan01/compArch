@@ -112,9 +112,8 @@ end component;
 component hazard_detection is
   port (
     id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
-    ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
-    ex_rs_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    ex_mem_read: in std_logic;
     idex_out_mem_read    : IN  std_logic; -- if memory is being read
     idex_flush            : OUT std_logic; -- To add bubble
     pc_write             : OUT std_logic; -- used to stall current instruction
@@ -469,10 +468,8 @@ begin
 
   hazard_detect: hazard_detection PORT MAP (
     id_instruction => id_instruction,
-    ex_rd_register  => ex_rd_register,
     ex_rt_register  => ex_rt_register,
-    ex_rs_register  => ex_rs_register,
-    idex_out_mem_read => ex_mem_read,
+    ex_mem_read => ex_mem_read,
     idex_flush => id_idex_flush,
     pc_write => id_stall_write,
     fflush => id_fflush
