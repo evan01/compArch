@@ -45,10 +45,4 @@ dope: 	addi $0 $0 0
 		add $30 $0 1
 		j go
 
-easter:	jr $31		
-
-
-
-
-
-
+easter:	jr $31
