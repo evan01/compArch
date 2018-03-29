@@ -19,7 +19,6 @@ ARCHITECTURE arch OF hazard_detection IS
 	TYPE instruction_type IS (r_type, i_type, j_type, b_type);
 	SIGNAL input_instruction_type : instruction_type;
 	signal last_instruction_type : instruction_type;
-	signal second_last_instruction_type : instruction_type;
 	signal first_instruction: std_logic := '1';
 
 		function get_instruction_type (id_instruction: std_logic_vector(31 downto 0)) return instruction_type is
@@ -207,7 +206,6 @@ BEGIN
         end if;
 		end if;
     last_instruction_type <= current_instruction_type;
-    second_last_instruction_type <= last_instruction_type;
   end if;
 END PROCESS;
 
