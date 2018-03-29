@@ -5,5 +5,5 @@ Start:  addi $1, $0, 12
         lw $3,40($0)
         beq $1, $2, Finish
 
-Finish: add $4, $2, $$1
+Finish: add $4, $2, $1
         jr $31
