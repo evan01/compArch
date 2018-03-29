@@ -6,7 +6,9 @@ ENTITY hazard_detection IS
 		id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
 		ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+		mem_dst_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
 		ex_mem_read    : IN  std_logic; -- if memory is being read
+		mem_mem_read    : IN  std_logic; -- if memory is being read
 		ex_reg_write    : IN  std_logic; -- if memory is being read
 		ex_mem_to_reg    : IN  std_logic; -- if memory is being read
 		idex_flush            : OUT std_logic := '0'; -- To add bubble
@@ -19,7 +21,6 @@ ARCHITECTURE arch OF hazard_detection IS
 	TYPE instruction_type IS (r_type, i_type, j_type, b_type);
 	SIGNAL input_instruction_type : instruction_type;
 	signal last_instruction_type : instruction_type;
-	signal first_instruction: std_logic := '1';
 
 		function get_instruction_type (id_instruction: std_logic_vector(31 downto 0)) return instruction_type is
 	BEGIN
@@ -173,25 +174,21 @@ BEGIN
 	variable current_instruction_type : instruction_type;
 	BEGIN
     current_instruction_type := get_instruction_type(id_instruction);
-		if (first_instruction = '1') then
-			first_instruction <= '0';
-		else
-      if (ex_mem_read = '1') THEN
-        if(ex_rt_register /= "00000" and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) THEN
-          pc_write  <= '0';
-          idex_flush <= '1';
-        end if;
+      -- detection of a load followed by an alu op that depends on the load value
+      if (ex_mem_read = '1' and ex_rt_register /= "00000" and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) THEN
+        pc_write  <= '0';
+        idex_flush <= '1';
       else
         -- for branching
         if (current_instruction_type = b_type) then
-          -- if we're writing to the cpu reg and the destination is what we need for the branch, stall
+          -- if we're writing to a cpu reg in ex and the destination is what we need for the branch, stall
           if(ex_reg_write = '1' and ex_mem_to_reg='0') then
-            -- if last instruction was r type and the register is used in the branch, stall
+            -- if last instruction was r type and the rd is used in the branch, stall
             if(ex_rd_register /= "00000" and last_instruction_type = r_type and (id_instruction(25 downto 21) = ex_rd_register or id_instruction(20 downto 16) = ex_rd_register)) then
               pc_write  <= '0';
               idex_flush <= '1';
             end if;
-            -- if last instruction was i type and the register is used in the branch, stall
+            -- if last instruction was i type and the rt register is used in the branch, stall
             if(ex_rt_register /= "00000" and last_instruction_type = i_type and (id_instruction(25 downto 21) = ex_rt_register or id_instruction(20 downto 16) = ex_rt_register)) then
               pc_write  <= '0';
               idex_flush <= '1';
@@ -200,13 +197,17 @@ BEGIN
             pc_write  <= '1';
             idex_flush <= '0';
           end if;
+        -- if branch in id stage depends on load in mem stage, stall
+        elsif (mem_mem_read ='1' and mem_dst_register /= "00000" and (id_instruction(25 downto 21) = mem_dst_register or id_instruction(20 downto 16) = mem_dst_register)) then
+          pc_write  <= '1';
+          idex_flush <= '0';
+        -- clear stalls
         else
           pc_write  <= '1';
           idex_flush <= '0';
         end if;
 		end if;
     last_instruction_type <= current_instruction_type;
-  end if;
 END PROCESS;
 
 END arch;

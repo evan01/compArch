@@ -114,7 +114,9 @@ component hazard_detection is
     id_instruction : IN  std_logic_vector(31 DOWNTO 0); -- instruction in if-id stage
     ex_rt_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_rd_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
+    mem_dst_register : IN  std_logic_vector(4 DOWNTO 0); -- rt register in the id-ex stage
     ex_mem_read: in std_logic;
+    mem_mem_read: in std_logic;
     ex_reg_write    : IN  std_logic; -- if memory is being read
     ex_mem_to_reg    : IN  std_logic; -- if memory is being read
     idex_flush            : OUT std_logic; -- To add bubble
@@ -483,7 +485,6 @@ begin
     X =>id_branch_comparator_input_2
   );
 
-
   branch_comp: branch_comparator PORT MAP(
     branch => id_branch,
     operand_a => id_branch_comparator_input_1,
@@ -499,10 +500,11 @@ begin
     ex_reg_write => ex_reg_write,
     ex_mem_to_reg => ex_mem_to_reg,
     ex_mem_read => ex_mem_read,
+    mem_mem_read => mem_mem_read,
     idex_flush => id_idex_flush,
-    pc_write => id_stall_write
+    pc_write => id_stall_write,
+    mem_dst_register => mem_dst_register
   );
-
 
 hazard_detect_mux: hazard_detection_mux PORT MAP (
     idex_flush => id_idex_flush,
