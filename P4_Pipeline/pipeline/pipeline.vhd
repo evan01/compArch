@@ -280,7 +280,8 @@ signal ex_shift_amount: std_logic_vector(31 downto 0);
 signal ex_forward_a: std_logic_vector(1 downto 0);
 signal ex_forward_b: std_logic_vector(1 downto 0);
 signal forward_mux_a_default: std_logic_vector(31 downto 0);
-signal forward_mux_b_default: std_logic_vector(31 downto 0);
+signal forwardB_result: std_logic_vector(31 downto 0);
+
 
 
 ------------------------------ END EX STAGE ------------------------------
@@ -599,9 +600,9 @@ alu_component: alu PORT MAP(
 
  mux_alu_b: mux2to1 PORT MAP(
    sel => ex_alu_src,
-   input_0 => ex_reg_read_data_2,
+   input_0 => forwardB_result,
    input_1 => ex_sign_extend_imm,
-   X => forward_mux_b_default
+   X => ex_alu_operand_b
  );
 
  mux_alu_a: mux2to1 PORT MAP(
@@ -633,10 +634,10 @@ alu_component: alu PORT MAP(
 
  forward_mux_b: mux3to1 PORT MAP(
     sel => ex_forward_b,
-    input_0 => forward_mux_b_default,
+    input_0 => ex_reg_read_data_2,
     input_1 => wb_reg_write_data,
     input_2 => mem_alu_result,
-    X => ex_alu_operand_b
+    X => forwardB_result
   );
 
 
@@ -661,7 +662,7 @@ alu_component: alu PORT MAP(
     exmem_in_alu_result => ex_alu_result,
     exmem_out_alu_result => mem_alu_result,
 
-    exmem_in_mem_write_data => ex_reg_read_data_2,
+    exmem_in_mem_write_data => forwardB_result,
     exmem_out_mem_write_data => mem_datamem_write_data,
 
     exmem_in_dest_register => ex_dst_register,

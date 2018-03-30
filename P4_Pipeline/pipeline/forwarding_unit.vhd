@@ -19,9 +19,8 @@ END forwarding_unit;
 ARCHITECTURE arch OF forwarding_unit IS
 
 BEGIN
-	operation : PROCESS (clock)
+	operation : PROCESS (ex_mem_rd,id_ex_rs, id_ex_rt,mem_wb_rd)
 	BEGIN
-	if(rising_edge(clock)) then
 	  forwardA <= "00";
 	  forwardB <= "00";
 	  --EX Hazard
@@ -44,10 +43,9 @@ BEGIN
 	  -- I removed this statement because it did not seem to work for this particular test:
 	  --and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") and (ex_mem_rd /= id_ex_rt)
 
-	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000") and not (ex_mem_regwrite = '1' and ex_mem_rd /= "00000") and (ex_mem_rd /= id_ex_rt)  and (mem_wb_rd = id_ex_rt) then
+	  if (mem_wb_regwrite = '1') and (mem_wb_rd /= "00000") and (ex_mem_rd /= id_ex_rt)  and (mem_wb_rd = id_ex_rt) then
 	  	forwardB <= "01";
 	  end if;
-	end if;
 		
 	END PROCESS operation;
 
