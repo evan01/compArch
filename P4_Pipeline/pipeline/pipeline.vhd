@@ -244,6 +244,7 @@ end component;
 
 component forwarding_unit is
  port (
+    clock: IN std_logic;
     forwardA: OUT std_logic_vector (1 downto 0);
     forwardB: OUT std_logic_vector (1 downto 0);
     ex_mem_regwrite: IN std_logic;
@@ -611,6 +612,7 @@ alu_component: alu PORT MAP(
  );
 
  forward: forwarding_unit PORT MAP(
+    clock => clock,
     forwardA => ex_forward_a,
     forwardB => ex_forward_b,
     ex_mem_regwrite => mem_reg_write,
