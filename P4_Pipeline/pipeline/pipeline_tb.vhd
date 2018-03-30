@@ -49,7 +49,7 @@ begin
     
         procedure ten_k_clock_cycles is 
         begin
-            for i in 0 to 10000 loop
+            for i in 0 to 9500 loop
                 wait for clk_period;
             end loop;
         end procedure;
