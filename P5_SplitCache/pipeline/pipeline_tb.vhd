@@ -4,10 +4,10 @@ use ieee.numeric_std.all;
 use STD.textio.all;
 use ieee.std_logic_textio.all;
 
-entity pipeline_split_tb is 
-end pipeline_split_tb;
+entity pipeline_tb is 
+end pipeline_tb;
 
-architecture arch of pipeline_split_tb is
+architecture arch of pipeline_tb is
     component pipeline is
         port(
             clock: in std_logic; 
@@ -49,7 +49,7 @@ begin
     
         procedure ten_k_clock_cycles is 
         begin
-            for i in 0 to 10000 loop
+            for i in 0 to 9500 loop
                 wait for clk_period;
             end loop;
         end procedure;

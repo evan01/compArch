@@ -13,14 +13,6 @@ package hazzard_detection_pkg is
             j_type, 
             b_type
         );
-        
-        TYPE hazzard_state is (
-            stall,
-            flush,
-            bubble,
-            normal,
-            start
-        );
 end package hazzard_detection_pkg;
 USE work.hazzard_detection_pkg.all;
 LIBRARY ieee;
