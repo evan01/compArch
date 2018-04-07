@@ -11,7 +11,7 @@ entity branch_predictor is
     if_instruction: in std_logic_vector(31 downto 0);
     id_instruction: in std_logic_vector(31 downto 0);
     id_branch_taken: in std_logic;
-    id_branch_target_address: in std_logic_vector(31 downto 0); --todo investigate why we need this.
+    id_branch_target_address: in std_logic_vector(31 downto 0);
     if_pc: in std_logic_vector(31 downto 0);
     id_pc: in std_logic_vector(31 downto 0);
 

@@ -38,6 +38,20 @@ component instruction_memory is
   );
 end component;
 
+component branch_predictor is
+  port (
+    if_instruction: in std_logic_vector(31 downto 0);
+    id_instruction: in std_logic_vector(31 downto 0);
+    id_branch_taken: in std_logic;
+    id_branch_target_address: in std_logic_vector(31 downto 0);
+    if_pc: in std_logic_vector(31 downto 0);
+    id_pc: in std_logic_vector(31 downto 0);
+
+    predict_branch_taken: out std_logic := '0';
+    branch_target_address : out std_logic_vector(31 downto 0) := (others => '0')
+  );
+end component;
+
 -- All the signals/wires for the if stage
 signal if_pc_output_address: std_logic_vector(31 downto 0);
 signal if_pc_input_address: std_logic_vector(31 downto 0);
@@ -45,6 +59,7 @@ signal if_incremented_pc_address: std_logic_vector(31 downto 0);
 signal if_branch_target_address: std_logic_vector(31 downto 0);
 signal if_instruction: std_logic_vector(31 downto 0);
 signal if_pc_sel: std_logic;
+signal if_predict_branch_taken: std_logic;
 ----------------------------- END IF STAGE -----------------------------
 
 component ifid_register is
@@ -420,6 +435,17 @@ begin
       pc => if_pc_output_address,
       instruction_out => if_instruction
     );
+
+  branch_pred: branch_predictor PORT MAP (
+    if_instruction => if_instruction,
+    id_instruction => id_instruction,
+    id_branch_taken => id_branch_taken,
+    id_branch_target_address => id_branch_target_address,
+    if_pc => if_pc_output_address,
+    id_pc => id_incremented_pc_address,
+    predict_branch_taken => if_predict_branch_taken,
+    branch_target_address => if_branch_target_address
+  );
 ----------------------------- END IF STAGE -----------------------------
 
   ifid_reg: ifid_register PORT MAP(
