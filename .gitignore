@@ -10,3 +10,5 @@ P4_Pipeline/assembler/assembler_main/.idea
 *.qpg
 *.qdb
 *.qtl
+*.wlf
+*.vstf
