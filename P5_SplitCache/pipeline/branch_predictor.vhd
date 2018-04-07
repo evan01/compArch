@@ -4,115 +4,123 @@ use ieee.numeric_std.all;
 
 entity branch_predictor is
   generic (
-      history_table_size : integer := 32768
+      --4096 entry size  chosen based on slides, indicating that a value above this produces little gain
+      branch_prediction_table_size : integer := 4096
   );
   port (
-    clk: in std_logic;
     if_instruction: in std_logic_vector(31 downto 0);
+    id_instruction: in std_logic_vector(31 downto 0);
     id_branch_taken: in std_logic;
-    id_branch_dest: in std_logic_vector(31 downto 0); --todo investigate why we need this.
-    pc: in std_logic_vector(31 downto 0);
-    predict_br_taken: out std_logic;
-    br_dest : out std_logic_vector(31 downto 0)
+    id_branch_target_address: in std_logic_vector(31 downto 0); --todo investigate why we need this.
+    if_pc: in std_logic_vector(31 downto 0);
+    id_pc: in std_logic_vector(31 downto 0);
+
+    predict_branch_taken: out std_logic := '0';
+    branch_target_address : out std_logic_vector(31 downto 0) := (others => '0')
   );
 end branch_predictor;
 
 architecture arch of branch_predictor is
---Signal definitions,
---First you get the row of the bht by the branch addr
---If the past branch history is 10(taken, not-taken) (oldest_hist/last_hist), then use the predictor in the row that
---is related to that history
---The structure of our bht is as follows
---[oldest_hist, last_hist, 11-predictor, 10 predictor, 01 predictor, 00 predictor] would be a record in the bht
-type branch_history_table is array(history_table_size-1 downto 0) of std_logic_vector(9 downto 0);
-signal bht: branch_history_table;
+--Access the branch prediction table by the branch address from the pc
+--Access the particular predictor using last_branch_1 and last_branch_2
+--Branch prediction table entry is | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor
+type branch_prediction_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(7 downto 0);
+--Branch address table is just branch target address (32 bits)
+type branch_address_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(31 downto 0);
+signal bpt: branch_prediction_table;
 
-TYPE instr IS (
-  addi, slti, andi, ori, xori, lui, lw, sw,
-  s_ll, s_rl, s_ra, add, sub, mult, div, slt, nd, o_r, n_or, x_or, mfhi, mflo,
-  jr,jal,j,
-  beq, bne,
-  invalid
-);
-TYPE instr_type IS ( r_type, i_type, j_type, b_type );
-
---Signals required for making predictions
-signal inst_type: instr_type;
-signal inst: instr;
-
---Signals required for updating the bht
-signal prediction_made: std_logic := '0';
-
---Component definitions
-component instruction_decoder IS
-PORT(
-  id_instruction : IN  std_logic_vector(31 DOWNTO 0);
-  instruction    : OUT  instr;
-  instruction_type: OUT instr_type
-);
-END component;
+--Used to index into which predictor to use based on taken of last 2 branches
+signal last_branch_1: std_logic := '0';
+signal last_branch_2: std_logic := '0';
+signal id_last_branch_1: std_logic := '0';
+signal id_last_branch_2: std_logic := '0';
+signal global_predictor: std_logic_vector(1 downto 0);
+signal id_global_predictor: std_logic_vector(1 downto 0);
 
 begin
 
-clk_process: process(clk)
-	variable bht_row: std_logic_vector(9 downto 0);
-	variable br_indx: std_logic_vector(15 downto 0);
-	variable br_history: std_logic_vector(1 downto 0);
-	variable br_predictor: std_logic_vector(1 downto 0);
-  begin
-    if(rising_edge(clk)) then
-      if(inst_type = b_type) then
-        --need to make a prediction
-        --first get the branch target addr
-        br_indx := if_instruction(15 downto 0);
-        --Then get the branch history table row
-        bht_row := bht(to_integer(unsigned(br_indx)));
-        --Then get the history
-        br_history := bht_row(9 downto 8);
-        --Based on the history, select the predictor
-        case br_history is
-          when "00" =>
-            br_predictor := bht_row(1 downto 0);
-          when "01" =>
-            br_predictor := bht_row(3 downto 2);
-          when "10" =>
-            br_predictor := bht_row(5 downto 4);
-          when "11" =>
-            br_predictor := bht_row(7 downto 6);
-        	when others =>
-      	    br_predictor := "XX";
-        end case;
+global_predictor <= last_branch_1 & last_branch_2;
+id_global_predictor <= id_last_branch_1 & id_last_branch_2;
 
-        --Based on the predictor, make a prediction
-        case br_predictor is
-          when "00" =>
-            predict_br_taken <= '0';
-          when "01" =>
-            predict_br_taken <= '0';
-          when "10" =>
-            predict_br_taken <= '1';
-          when "11" =>
-            predict_br_taken <= '1';
-        	when others =>
-      	    predict_br_taken <= 'X';
-        end case;
-        br_dest <= id_branch_dest;
-        prediction_made <= '1';
-      end if;
-  end if;
+predict_branch: process(if_pc)
+	variable var_bpt_row: std_logic_vector(7 downto 0);
+	variable var_local_predictor: std_logic_vector(1 downto 0);
+	variable var_global_predictor_index: integer;
+  begin
+    --If the current instruction is a branch, make a prediction
+    if (if_instruction(31 downto 26) = "000100" or if_instruction(31 downto 26) = "000101") then
+      --Get the branch predictors for a particular branch using the pc
+      var_bpt_row := bpt(to_integer(unsigned(if_pc(11 downto 0))));
+      --Based on the history, select the predictor
+      var_global_predictor_index := to_integer(unsigned(global_predictor)) * 2;
+      var_local_predictor := var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index);
+
+      --Based on the predictor state, make a prediction
+      case var_local_predictor is
+        when "00" =>
+          predict_branch_taken <= '0';
+        when "01" =>
+          predict_branch_taken <= '0';
+        when "10" =>
+          predict_branch_taken <= '1';
+        when "11" =>
+          predict_branch_taken <= '1';
+      	when others =>
+    	    predict_branch_taken <= 'X';
+      end case;
+
+      --Need to propagate the values we used to index the branch predictor
+      id_last_branch_1 <= last_branch_1;
+      id_last_branch_2 <= last_branch_2;
+    end if;
 end process;
 
---Need to know exactly 1 cc after we made a prediction whether or not the prediction was correct.
-update_prediction: process(prediction_made)
-	variable bht_indx: integer;
+--Need to update prediction if current instruction in ID is branch
+update_prediction: process(id_pc)
+  variable var_bpt_row: std_logic_vector(7 downto 0);
+	variable var_local_predictor: std_logic_vector(1 downto 0);
+	variable var_global_predictor_index: integer;
   begin
-   if(prediction_made = '1') then
-    --update bht
-    --first get the branch target addr indx
-    bht_indx := to_integer(unsigned(id_branch_dest(15 downto 0)));
-    --Then get the branch history table row and update it (shift history left and add newest result)
-    bht(bht_indx) <= bht(bht_indx)(8) & id_branch_taken & bht(bht_indx)(7 downto 0);
-    prediction_made <= '0';
+   if (id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101") then
+     -- Update the global branch taken
+     last_branch_2 <= last_branch_1;
+     last_branch_1 <= id_branch_taken;
+
+    ------update bpt -----
+
+    --first get the predictor entry
+    var_bpt_row := bpt(to_integer(unsigned(id_pc(11 downto 0))));
+
+    --Based on the history in the id stage, select the predictor
+    var_global_predictor_index := to_integer(unsigned(id_global_predictor)) * 2;
+    var_local_predictor := var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index);
+
+    --Update the 2 bit predictor based on whether the branch was taken
+    case var_local_predictor is
+      when "00" =>
+        if(id_branch_taken = '1') then
+          var_local_predictor := "01";
+        end if;
+      when "01" =>
+        if(id_branch_taken = '1') then
+          var_local_predictor := "11";
+        end if;
+      when "10" =>
+        if(id_branch_taken = '0') then
+          var_local_predictor := "00";
+        end if;
+      when "11" =>
+        if(id_branch_taken = '0') then
+          var_local_predictor := "10";
+        end if;
+      when others =>
+    end case;
+
+    --Update the predictor in the prediction table row
+    var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index) := var_local_predictor;
+
+    --Update the row in the table
+    bpt(to_integer(unsigned(id_pc(11 downto 0)))) <= var_bpt_row;
   end if;
 end process;
 
