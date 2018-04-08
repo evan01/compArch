@@ -61,7 +61,8 @@ signal if_incremented_pc_address: std_logic_vector(31 downto 0);
 signal if_branch_target_address: std_logic_vector(31 downto 0);
 signal if_instruction: std_logic_vector(31 downto 0);
 signal if_pc_sel: std_logic;
-signal if_predict_branch_taken: std_logic;
+signal if_predict_taken: std_logic;
+signal if_target_address: std_logic_vector(31 downto 0);
 ----------------------------- END IF STAGE -----------------------------
 
 component ifid_register is
@@ -69,6 +70,8 @@ port (
   fflush: in std_logic;
   ifid_write: in std_logic;
   clock: in std_logic;
+  ifid_in_predict_taken: in std_logic;
+  ifid_out_predict_taken: out std_logic;
   ifid_in_incremented_pc_address: in std_logic_vector(31 downto 0);
   ifid_out_incremented_pc_address: out std_logic_vector(31 downto 0);
   ifid_in_instruction: in std_logic_vector(31 downto 0);
@@ -202,6 +205,8 @@ signal id_reg_write_out : std_logic;
 signal id_mem_to_reg_out : std_logic;
 signal id_alu_opcode_out : std_logic_vector (4 DOWNTO 0);
 signal id_shift_instr: std_logic;
+signal id_predict_taken: std_logic;
+signal id_wrong_prediction: std_logic;
 
 ------------------------------ END ID STAGE ------------------------------
 
@@ -423,8 +428,15 @@ begin
   mux_pc_input : mux2to1 PORT MAP(
     sel => id_pc_src,
     input_0 => if_incremented_pc_address,
-    input_1 => id_target_address,
+    input_1 => if_target_address,
     X => if_pc_input_address
+  );
+
+  mux_prediction_correction : mux2to1 PORT MAP(
+    sel => id_fflush,
+    input_0 => if_branch_target_address,
+    input_1 => id_target_address,
+    X => if_target_address
   );
 
   pc_incrementer: byte_adder PORT MAP(
@@ -447,15 +459,17 @@ begin
     id_branch_target_address => id_branch_target_address,
     if_pc => if_pc_output_address,
     id_pc => id_incremented_pc_address,
-    predict_branch_taken => if_predict_branch_taken,
+    predict_branch_taken => if_predict_taken,
     branch_target_address => if_branch_target_address
   );
 ----------------------------- END IF STAGE -----------------------------
 
   ifid_reg: ifid_register PORT MAP(
     clock => clock,
-    fflush => id_pc_src,
+    fflush => id_fflush,
     ifid_write => id_stall_write,
+    ifid_in_predict_taken => if_predict_taken,
+    ifid_out_predict_taken => id_predict_taken,
     ifid_in_incremented_pc_address => if_incremented_pc_address,
     ifid_out_incremented_pc_address => id_incremented_pc_address,
     ifid_in_instruction => if_instruction,
@@ -563,6 +577,7 @@ mux_branch_jump_selector : mux2to1 PORT MAP(
   X => id_target_address
 );
 
+
 mux_jump_jump_reg_selector : mux2to1 PORT MAP(
   sel => id_jump_sel,
   input_0 => id_regular_jump_target_address,
@@ -570,8 +585,12 @@ mux_jump_jump_reg_selector : mux2to1 PORT MAP(
   X => id_jump_target_address
 );
 
-id_pc_src <= id_branch_taken or id_jump;
+id_pc_src <= if_predict_taken or id_fflush;
 
+id_wrong_prediction <= id_predict_taken xor id_branch_taken;
+
+--Flush the ifid register if we predict wrong or if we are jumping
+id_fflush <= id_jump or id_wrong_prediction;
 --Calculate the branch target address for an instruction in the ID stage
 id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
 id_regular_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");

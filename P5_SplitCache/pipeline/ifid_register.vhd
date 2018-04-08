@@ -7,6 +7,8 @@ port (
   fflush: in std_logic := '0';
   ifid_write: in std_logic := '1';
   clock: in std_logic;
+  ifid_in_predict_taken: in std_logic;
+  ifid_out_predict_taken: out std_logic := '0';
   ifid_in_incremented_pc_address: in std_logic_vector(31 downto 0);
   ifid_out_incremented_pc_address: out std_logic_vector(31 downto 0) := (others => '0');
   ifid_in_instruction: in std_logic_vector(31 downto 0);
@@ -28,6 +30,7 @@ begin
         -- Propagate new data through, else keep the current data (if stall)
         ifid_out_incremented_pc_address <= ifid_in_incremented_pc_address;
         ifid_out_instruction <= ifid_in_instruction;
+        ifid_out_predict_taken <= ifid_in_predict_taken;
       end if;
     end if;
   end if;

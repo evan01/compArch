@@ -35,11 +35,9 @@ signal bat: branch_address_table := (others => (others => '0'));
 signal last_branch_1: std_logic := '0';
 signal last_branch_2: std_logic := '0';
 signal global_predictor: std_logic_vector(1 downto 0);
-signal debug_pc: integer;
 begin
 
 global_predictor <= last_branch_2 & last_branch_1;
-debug_pc <= to_integer(unsigned(if_pc(13 downto 2)));
 
 predict_branch: process(if_pc, if_instruction)
 	variable var_bpt_row: std_logic_vector(7 downto 0);
