@@ -27,8 +27,8 @@ architecture arch of branch_predictor is
 type branch_prediction_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(7 downto 0);
 --Branch address table is just branch target address (32 bits)
 type branch_address_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(31 downto 0);
-signal bpt: branch_prediction_table;
-
+signal bpt: branch_prediction_table := (others => (others => '0'));
+signal bat: branch_address_table := (others => (others => '0'));
 --Used to index into which predictor to use based on taken of last 2 branches
 signal last_branch_1: std_logic := '0';
 signal last_branch_2: std_logic := '0';
@@ -50,7 +50,7 @@ predict_branch: process(if_pc)
     --If the current instruction is a branch, make a prediction
     if (if_instruction(31 downto 26) = "000100" or if_instruction(31 downto 26) = "000101") then
       --Get the branch predictors for a particular branch using the pc
-      var_bpt_row := bpt(to_integer(unsigned(if_pc(11 downto 0))));
+      var_bpt_row := bpt(to_integer(unsigned(if_pc(13 downto 2))));
       --Based on the history, select the predictor
       var_global_predictor_index := to_integer(unsigned(global_predictor)) * 2;
       var_local_predictor := var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index);
@@ -73,10 +73,12 @@ predict_branch: process(if_pc)
       id_last_branch_1 <= last_branch_1;
       id_last_branch_2 <= last_branch_2;
     end if;
+    --Get branch target address from array
+    branch_target_address <= bat(to_integer(unsigned(if_pc(13 downto 2))));
 end process;
 
 --Need to update prediction if current instruction in ID is branch
-update_prediction: process(id_pc)
+update_prediction: process(id_pc, id_branch_taken, id_branch_target_address)
   variable var_bpt_row: std_logic_vector(7 downto 0);
 	variable var_local_predictor: std_logic_vector(1 downto 0);
 	variable var_global_predictor_index: integer;
@@ -88,8 +90,8 @@ update_prediction: process(id_pc)
 
     ------update bpt -----
 
-    --first get the predictor entry
-    var_bpt_row := bpt(to_integer(unsigned(id_pc(11 downto 0))));
+    --Index subtract by 1 since this is the incremented pc address, not the pc address of the branch
+    var_bpt_row := bpt(to_integer(unsigned(id_pc(13 downto 2))) - 1);
 
     --Based on the history in the id stage, select the predictor
     var_global_predictor_index := to_integer(unsigned(id_global_predictor)) * 2;
@@ -116,11 +118,12 @@ update_prediction: process(id_pc)
       when others =>
     end case;
 
+    -- Update the branch target address and store it so we can make predictions in the if stage in the future
+    bat(to_integer(unsigned(id_pc(13 downto 2))) - 1) <= id_branch_target_address;
     --Update the predictor in the prediction table row
     var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index) := var_local_predictor;
-
     --Update the row in the table
-    bpt(to_integer(unsigned(id_pc(11 downto 0)))) <= var_bpt_row;
+    bpt(to_integer(unsigned(id_pc(13 downto 2))) - 1) <= var_bpt_row;
   end if;
 end process;
 
