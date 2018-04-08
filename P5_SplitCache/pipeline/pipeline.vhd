@@ -40,6 +40,8 @@ end component;
 
 component branch_predictor is
   port (
+    clock: in std_logic;
+    id_stall_write: in std_logic;
     if_instruction: in std_logic_vector(31 downto 0);
     id_instruction: in std_logic_vector(31 downto 0);
     id_branch_taken: in std_logic;
@@ -437,6 +439,8 @@ begin
     );
 
   branch_pred: branch_predictor PORT MAP (
+    clock => clock,
+    id_stall_write => id_stall_write,
     if_instruction => if_instruction,
     id_instruction => id_instruction,
     id_branch_taken => id_branch_taken,
