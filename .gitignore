@@ -12,3 +12,11 @@ P4_Pipeline/assembler/assembler_main/.idea
 *.qtl
 *.wlf
 *.vstf
+*.png
+*.js
+*.css
+*.htm
+*.html
+*.mp
+*.gif
+*.list
