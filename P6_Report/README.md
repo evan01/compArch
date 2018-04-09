@@ -261,4 +261,9 @@ end:    addi $5, $0, -1
 ## Results
 |Test a | No-Branch Prediction (Clock Cycles)| W/ Branch Prediction (Clock Cycles)|
 |----| --------------------| --------------------|
-| 0-100 For Loop| 0 | 10 |  
+| 0-100 For Loop| 0 | 414 |
+| 3 If Statements For Loop| 0 | 71 |
+| Factorial Calculator| NOT WORKING | NOT WORKING |
+| Sequential Branch Statements| 0 | 14 |
+| Every Second Branch Taken Loop|0| 18 |
+| Infinite For Loop (Only 20 iterations taken) NOT A GOOD TEST | 0|0 | 
