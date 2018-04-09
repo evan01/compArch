@@ -257,3 +257,8 @@ end:    addi $5, $0, -1
 00001000000000000000000000000011
 00100000000001011111111111111111
 ```
+
+## Results
+|Test a | No-Branch Prediction (Clock Cycles)| W/ Branch Prediction (Clock Cycles)|
+|----| --------------------| --------------------|
+| 0-100 For Loop| 0 | 10 |  
