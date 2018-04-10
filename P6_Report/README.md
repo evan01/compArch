@@ -129,7 +129,9 @@ end:    addi $1, $0, -1
 ```
 00100000000000010000000000000101
 00100000000000100000000000000100
+00000000000000000000000000000000
 00010000010000000000000000000100
+00000000000000000000000000000000
 00000000001000100000000000011000
 00000000000000000000100000010010
 00100000010000101111111111111111
@@ -263,7 +265,7 @@ end:    addi $5, $0, -1
 |----| --------------------| --------------------|
 | 0-100 For Loop| 0 | 414 |
 | 3 If Statements For Loop| 0 | 71 |
-| Factorial Calculator| NOT WORKING | NOT WORKING |
+| Factorial Calculator| NOT WORKING | 36 |
 | Sequential Branch Statements| 0 | 14 |
 | Every Second Branch Taken Loop|0| 18 |
 | Infinite For Loop (Only 20 iterations taken) NOT A GOOD TEST | 0|0 | 
