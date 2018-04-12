@@ -343,7 +343,7 @@ int b = 1;
 
 ```
 
-### 7. Not-Taken - Not-Taken
+### 10. Not-Taken - Not-Taken
 ####Code
 ```java
     int b = 1;
