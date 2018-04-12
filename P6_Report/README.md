@@ -274,6 +274,93 @@ Finish: add $4, $2, $1 # PC 56
 00000000010000010010000000100000
 ```
 
+### 7. Taken - Taken
+####Code
+```java
+    int b = 1;
+    for(int i=0; i<10; i++){
+        if(b = 0){
+            b = 1;
+        }
+    }
+```
+####Assembly
+```
+    addi $1, $0, 1
+    addi $5, $0, 1
+    addi $2, $0, 0
+    addi $3, $0, 10
+    beq $2, $3, end
+    bne $1, $5, loop
+    addi $1, $5
+
+end: addi $10, $0, -1
+```
+####Machine Code
+```
+
+```
+### 8. Taken - Not-Taken
+####Code
+```java
+    int b = 1;
+    for(int i=0; i<10; i++){
+        if(b = 0){
+            b = 1;
+        } else{
+            b = 1
+        }
+    }
+```
+####Assembly
+```
+
+```
+####Machine Code
+```
+
+```
+
+### 9. Not-Taken - Taken
+####Code
+```java
+int b = 1;
+    for(int i=0; i<10; i++){
+        if(b = 1){
+            b = 0;
+        } else{
+            b = 1
+        }
+    }
+```
+####Assembly
+```
+
+```
+####Machine Code
+```
+
+```
+
+### 7. Not-Taken - Not-Taken
+####Code
+```java
+    int b = 1;
+    for(int i=0; i<10; i++){
+        if(b = 1){
+            b = 1;
+        }
+    }
+
+```
+####Assembly
+```
+
+```
+####Machine Code
+```
+
+```
 ## Results
 |Test a | No-Branch Prediction (Clock Cycles)| W/ Branch Prediction (Clock Cycles)|
 |----| --------------------| --------------------|
