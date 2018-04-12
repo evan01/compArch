@@ -25,8 +25,9 @@ end branch_predictor;
 architecture arch of branch_predictor is
 --Access the branch prediction table by the branch address from the pc
 --Access the particular predictor using last_branch_1 and last_branch_2
---Branch prediction table entry is | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor
-type branch_prediction_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(7 downto 0);
+--Branch prediction table entry is
+-- | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor | 2 bit predictor
+type branch_prediction_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(15 downto 0);
 --Branch address table is just branch target address (32 bits)
 type branch_address_table is array(branch_prediction_table_size - 1 downto 0) of std_logic_vector(31 downto 0);
 signal bpt: branch_prediction_table := (others => (others => '0'));
@@ -34,15 +35,18 @@ signal bat: branch_address_table := (others => (others => '0'));
 --Used to index into which predictor to use based on taken of last 2 branches
 signal last_branch_1: std_logic := '0';
 signal last_branch_2: std_logic := '0';
-signal global_predictor: std_logic_vector(1 downto 0);
+signal last_branch_3: std_logic := '0';
+signal internal_branch_taken: std_logic := '0';
+signal global_predictor: std_logic_vector(2 downto 0);
 begin
 
-global_predictor <= last_branch_2 & last_branch_1;
+global_predictor <= last_branch_3 & last_branch_2 & last_branch_1;
 
 predict_branch: process(if_pc, if_instruction)
-	variable var_bpt_row: std_logic_vector(7 downto 0);
+	variable var_bpt_row: std_logic_vector(15 downto 0);
   variable var_local_predictor: std_logic_vector(1 downto 0);
 	variable var_global_predictor_index: integer;
+	variable var_predict_branch_taken: std_logic;
   begin
     --If the current instruction is a branch, make a prediction
     if (if_instruction(31 downto 26) = "000100" or if_instruction(31 downto 26) = "000101") then
@@ -55,16 +59,19 @@ predict_branch: process(if_pc, if_instruction)
       var_local_predictor := var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index);
       case var_local_predictor is
         when "00" =>
-          predict_branch_taken <= '0';
+          var_predict_branch_taken := '0';
         when "01" =>
-          predict_branch_taken <= '0';
+          var_predict_branch_taken := '0';
         when "10" =>
-          predict_branch_taken <= '1';
+          var_predict_branch_taken := '1';
         when "11" =>
-          predict_branch_taken <= '1';
+          var_predict_branch_taken := '1';
           when others =>
-            predict_branch_taken <= 'X';
+            var_predict_branch_taken := 'X';
       end case;
+
+      predict_branch_taken <= var_predict_branch_taken;
+      internal_branch_taken <= var_predict_branch_taken;
 
     end if;
     --Get branch target address from array
@@ -72,17 +79,21 @@ predict_branch: process(if_pc, if_instruction)
 end process;
 
 --Need to update prediction if current instruction in ID is branch
-update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_address, id_stall_write)
-  variable var_bpt_row: std_logic_vector(7 downto 0);
+update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_address, id_stall_write, id_instruction, internal_branch_taken)
+  variable var_bpt_row: std_logic_vector(15 downto 0);
   variable var_local_predictor: std_logic_vector(1 downto 0);
 	variable var_global_predictor_index: integer;
   begin
     if (rising_edge(clock)) then
       --Make sure we arent stalling when updating whether we took the last branch
+      if(internal_branch_taken = '1') then
+        last_branch_1 <= '1';
+      end if;
       if ((id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101") and id_stall_write = '1') then
          -- Update the global branch taken
         last_branch_1 <= id_branch_taken;
         last_branch_2 <= last_branch_1;
+        last_branch_3 <= last_branch_2;
 
         ------update bpt -----
         --Index subtract by 1 since this is the incremented pc address, not the pc address of the branch

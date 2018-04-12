@@ -235,6 +235,7 @@ end:    addi $4, $0, -1
             c = 0;
         }
     }
+    d = 1;
 ```
 
 #### Assembly
@@ -364,9 +365,9 @@ int b = 1;
 ## Results
 |Test a | No-Branch Prediction (Clock Cycles)| W/ Branch Prediction (Clock Cycles)|
 |----| --------------------| --------------------|
-| 0-100 For Loop| 0 | 414 |
-| 3 If Statements For Loop| 0 | 71 |
-| Factorial Calculator| NOT WORKING | 36 |
-| Sequential Branch Statements| 0 | 14 |
-| Every Second Branch Taken Loop|0| 18 |
-| Infinite For Loop (Only 20 iterations taken) NOT A GOOD TEST | 0|0 | 
+| 0-100 For Loop| 416 | 414 |
+| 3 If Statements For Loop| 72 | 71 |
+| Factorial Calculator| 36 | 36 |
+| Sequential Branch Statements| 15 | 14 |
+| Every Second Branch Taken Loop| 19 | 18 |
+| Every Branch Taken Loop |  96 | 96 | 
