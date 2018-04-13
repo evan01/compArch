@@ -278,46 +278,67 @@ Finish: add $4, $2, $1 # PC 56
 ### 7. Taken - Taken
 ####Code
 ```java
+    int a = 1;
     int b = 1;
     for(int i=0; i<10; i++){
-        if(b = 0){
-            b = 1;
+        if(a = 2){
+            a = 1;
         }
+        if(b = 2){
+            b = 1
+        }
+        a = 1;
+        b = 1;
     }
 ```
-####Assembly
+#### Assembly
 ```
-    addi $1, $0, 1
-    addi $5, $0, 1
-    addi $2, $0, 0
-    addi $3, $0, 10
-    beq $2, $3, end
-    bne $1, $5, loop
-    addi $1, $5
-
+        addi $1, $0, 1
+        addi $2, $0, 1
+        addi $3, $0, 0 #loop counter
+        addi $4, $0, 10 #loop stop
+        addi $5, $0, 2 #dummy comparator
+loop:   beq $3, $4, end
+        bne $1, $5, if2
+if1:    addi $1, $0, 1
+if2:    bne $2, $5, endif
+endif:  addi $1, $0, 1
+        addi $2, $0, 1
+        addi $3, $3, 1
+        j loop
 end: addi $10, $0, -1
 ```
-####Machine Code
+#### Machine Code
 ```
 
 ```
 ### 8. Taken - Not-Taken
-####Code
+#### Code
 ```java
     int b = 1;
     for(int i=0; i<10; i++){
         if(b = 0){
             b = 1;
-        } else{
-            b = 1
+        } else {
+            b = 0
         }
     }
 ```
-####Assembly
+#### Assembly
 ```
-
+        addi $1, $0, 1
+        addi $3, $0, 0 #loop counter
+        addi $4, $0, 10 #loop stop
+loop:   beq $3, $4, end
+        addi $3, $3, 1
+        bne $1, $0, else
+        addi $1, $0, 1
+        j loop
+else:   addi $1, $0, 0
+        j loop        
+end: addi $10, $0, -1
 ```
-####Machine Code
+#### Machine Code
 ```
 
 ```
@@ -325,7 +346,7 @@ end: addi $10, $0, -1
 ### 9. Not-Taken - Taken
 ####Code
 ```java
-int b = 1;
+    int b = 1;
     for(int i=0; i<10; i++){
         if(b = 1){
             b = 0;
@@ -334,17 +355,29 @@ int b = 1;
         }
     }
 ```
-####Assembly
+#### Assembly
 ```
+        addi $1, $0, 1
+        addi $2, $0, 0
+        addi $3, $0, 10
+        addi $4, $0, 1
+loop:   beq $2, $3, end
+        addi $2, $2, 1
+        bne $1, $4, else
+        addi $1, $0, 0
+        j end
+else:   addi $1, $0, 1
+end:    j loop:
 
+end: addi $10, $0, -1
 ```
-####Machine Code
+#### Machine Code
 ```
 
 ```
 
 ### 10. Not-Taken - Not-Taken
-####Code
+#### Code
 ```java
     int b = 1;
     for(int i=0; i<10; i++){
@@ -354,11 +387,20 @@ int b = 1;
     }
 
 ```
-####Assembly
+#### Assembly
 ```
-
+        addi $1, $0, 1
+        addi $2, $0, 0
+        addi $3, $0, 10
+        addi $4, $0, 1
+loop:   beq $2, $3, end
+        addi $2, $2, 1
+        bne $1, $4
+        j loop
+else:   j loop
+end: addi $10, $0, -1
 ```
-####Machine Code
+#### Machine Code
 ```
 
 ```
