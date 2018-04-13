@@ -591,8 +591,10 @@ id_wrong_prediction <= id_predict_taken xor id_branch_taken;
 
 --Flush the ifid register if we predict wrong or if we are jumping
 id_fflush <= id_jump or id_wrong_prediction;
---Calculate the branch target address for an instruction in the ID stage
-id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
+--Calculate the branch target address for an instruction in the ID stage. If we predict taken and it isn't, set the branch target address to the incremented pc address. If
+-- we don't predict taken and it is, set 
+id_branch_target_address <= id_incremented_pc_address when id_branch_taken = '0'
+else std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
 id_regular_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");
 
 ----------------------------- END ID STAGE -----------------------------
