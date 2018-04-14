@@ -470,14 +470,15 @@ end: addi $10, $0, -1
         addi $4, $0, 3
 loop:   beq $2, $3, end
         addi $2, $2, 1
-        beq $2, $4, st_tak
+        beq $2, $4, st_n_tak
         addi $7, $0, 20
         addi $8, $0, 30
         bne $1, $4, else
         addi $5, $0, -1
+        addi $5, $0, -1
 else:   j loop
 
-st_tak: addi $1, $0, 3
+st_n_tak: addi $1, $0, 3
         j loop
 end: addi $10, $0, -1
 ```
@@ -553,9 +554,15 @@ end: addi $10, $0, -1
 ## Results
 |Test a | No-Branch Prediction (Clock Cycles)| W/ Branch Prediction (Clock Cycles)|
 |----| --------------------| --------------------|
-| 0-100 For Loop| 416 | 414 |
-| 3 If Statements For Loop| 72 | 71 |
-| Factorial Calculator| 36 | 36 |
-| Sequential Branch Statements| 15 | 14 |
-| Every Second Branch Taken Loop| 19 | 18 |
-| Every Branch Taken Loop |  96 | 96 | 
+| 1. 0-100 For Loop| 416 | 414 |
+| 2. 3 If Statements For Loop| 72 | 71 |
+| 3. Factorial Calculator| 36 | 36 |
+| 4. Sequential Branch Statements| 15 | 14 |
+| 5. Every Second Branch Taken Loop| 19 | 18 |
+| 6. Every Branch Taken Loop |  96 | 96 | 
+| 7. Taken Taken |  122 | 113 | 
+| 8. Taken - Not Taken |  76 | 75 | 
+| 9. Not-Taken Taken |  X | X | 
+| 10. Not-Taken Not-Taken |  X | X | 
+| 11. Taken, Taken, Taken - Not-Taken |  X | X | 
+| 12. Not-Taken, Not-Taken, Not-Taken |  109 | 104 | 
