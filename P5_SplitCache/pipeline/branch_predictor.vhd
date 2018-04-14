@@ -85,10 +85,12 @@ update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_addre
 	variable var_global_predictor_index: integer;
   begin
     if (rising_edge(clock)) then
-      --Make sure we arent stalling when updating whether we took the last branch
-      if(internal_branch_taken = '1') then
+      if(internal_branch_taken = '1' and id_stall_write = '1') then
         last_branch_1 <= '1';
+        last_branch_2 <= last_branch_1;
+        last_branch_3 <= last_branch_2;
       end if;
+      --Make sure we arent stalling when updating whether we took the last branch
       if ((id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101") and id_stall_write = '1') then
          -- Update the global branch taken
         last_branch_1 <= id_branch_taken;

@@ -191,6 +191,7 @@ signal id_branch_comparator_input_2: std_logic_vector(31 downto 0);
 signal id_alu_opcode: std_logic_vector (4 downto 0);
 signal id_sign_extend_imm: std_logic_vector(31 downto 0);
 signal id_branch_target_address: std_logic_vector(31 downto 0);
+signal id_branch_result_address: std_logic_vector(31 downto 0);
 signal id_regular_jump_target_address: std_logic_vector(31 downto 0);
 signal id_jump_target_address: std_logic_vector(31 downto 0);
 signal id_stall_write : std_logic;
@@ -572,11 +573,19 @@ hazard_detect_mux: hazard_detection_mux PORT MAP (
 
 mux_branch_jump_selector : mux2to1 PORT MAP(
   sel => id_jump,
-  input_0 => id_branch_target_address,
+  input_0 => id_branch_result_address,
   input_1 => id_jump_target_address,
   X => id_target_address
 );
 
+-- This mux enables the ability to send back the incremented pc address to the if stage,
+-- in the situation where our branch predictor is wrong.
+mux_branch_result_selector : mux2to1 PORT MAP(
+  sel => id_branch_taken,
+  input_0 => id_incremented_pc_address,
+  input_1 => id_branch_target_address,
+  X => id_branch_result_address
+);
 
 mux_jump_jump_reg_selector : mux2to1 PORT MAP(
   sel => id_jump_sel,
@@ -587,14 +596,13 @@ mux_jump_jump_reg_selector : mux2to1 PORT MAP(
 
 id_pc_src <= if_predict_taken or id_fflush;
 
+--if the id branch result is not the same as what we predicted, we have a problem
 id_wrong_prediction <= id_predict_taken xor id_branch_taken;
 
 --Flush the ifid register if we predict wrong or if we are jumping
-id_fflush <= id_jump or id_wrong_prediction;
---Calculate the branch target address for an instruction in the ID stage. If we predict taken and it isn't, set the branch target address to the incremented pc address. If
--- we don't predict taken and it is, set 
-id_branch_target_address <= id_incremented_pc_address when id_branch_taken = '0'
-else std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
+id_fflush <= (id_jump or id_wrong_prediction) and id_stall_write;
+--Calculate the branch target address for an instruction in the ID stage.
+id_branch_target_address <= std_logic_vector(unsigned(id_incremented_pc_address) + (unsigned(id_sign_extend_imm) sll 2));
 id_regular_jump_target_address <= std_logic_vector(id_incremented_pc_address(31 downto 28) & id_instruction(25 downto 0) & "00");
 
 ----------------------------- END ID STAGE -----------------------------
