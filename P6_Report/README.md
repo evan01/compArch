@@ -391,8 +391,6 @@ loop:   beq $2, $3, end
         addi $1, $0, 0
         j end
 else:   addi $1, $0, 1
-end:    j loop
-
 end: addi $10, $0, -1
 ```
 #### Machine Code
