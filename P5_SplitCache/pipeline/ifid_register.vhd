@@ -25,6 +25,7 @@ begin
     if (fflush = '1') then
       -- Insert bubble/nop (used during jump instruction)
       ifid_out_instruction <= "00100000000000000000000000000000";
+      ifid_out_predict_taken <= '0';
     else
       if(ifid_write = '1') then
         -- Propagate new data through, else keep the current data (if stall)

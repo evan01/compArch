@@ -45,6 +45,7 @@ component branch_predictor is
     if_instruction: in std_logic_vector(31 downto 0);
     id_instruction: in std_logic_vector(31 downto 0);
     id_branch_taken: in std_logic;
+    id_wrong_prediction: in std_logic;
     id_branch_target_address: in std_logic_vector(31 downto 0);
     if_pc: in std_logic_vector(31 downto 0);
     id_pc: in std_logic_vector(31 downto 0);
@@ -457,6 +458,7 @@ begin
     if_instruction => if_instruction,
     id_instruction => id_instruction,
     id_branch_taken => id_branch_taken,
+    id_wrong_prediction => id_wrong_prediction,
     id_branch_target_address => id_branch_target_address,
     if_pc => if_pc_output_address,
     id_pc => id_incremented_pc_address,

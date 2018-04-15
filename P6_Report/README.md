@@ -40,7 +40,7 @@ END:    addi $1, $0, 1
 
 ### 2. For loop, 3 if statements
 #### Code
-```java 
+```java
     int a = 0;
     for (i=0;i<3;i++){
         if(a == 0){
@@ -75,7 +75,7 @@ if2:    bne $1, $4, if2
 if3:    bne $1, $4, if2
         addi $1, $0, 3
         addi $4, $0, 3
-        
+
         addi $2, $2, 1
         j loop
 
@@ -107,7 +107,7 @@ end:    addi $1, $0, 1
 ```java
     int a = 5;
     int result = 1;
-    
+
     while (a > 0){
         result = a*result;
         a--;
@@ -454,54 +454,40 @@ end: addi $10, $0, -1
 ### 11. Taken,Taken,Taken -> Not-Taken
 #### Code
 ```java
-    int b = 0
     for(int i=0; i<10; i++){
-        if(b < 3){
-            b += 1;
+        if(i == 6){
+            z = -1;
         }
     }
 
 ```
 #### Assembly
 ```
-        addi $1, $0, 0 #b = 0
-        addi $2, $0, 0 
-        addi $3, $0, 10
-        addi $4, $0, 5
+addi $1, $0, 0 #b = 0
+addi $2, $0, 0
+addi $3, $0, 10
+addi $4, $0, 6
 loop:   beq $2, $3, end
-        addi $2, $2, 1
-        beq $2, $4, st_n_tak
-        addi $7, $0, 20
-        addi $8, $0, 30
-        bne $1, $4, else
-        addi $5, $0, -1
-        addi $5, $0, -1
-else:   addi $5, $0, -1
-        j loop
-
-st_n_tak: addi $1, $0, 5
-        j loop
+addi $2, $2, 1
+bne $2, $4, else #24
+addi $5, $0, -1
+else:   j loop #32
 end: addi $10, $0, -1
+
 ```
 #### Machine Code
 ```
 00100000000000010000000000000000
 00100000000000100000000000000000
 00100000000000110000000000001010
-00100000000001000000000000000101
-00010000010000110000000000001011
+00100000000001000000000000000110
+00010000010000110000000000000100
 00100000010000100000000000000001
-00010000010001000000000000000111
-00100000000001110000000000010100
-00100000000010000000000000011110
-00010100001001000000000000000010
+00010100010001000000000000000001
 00100000000001011111111111111111
-00100000000001011111111111111111
-00100000000001011111111111111111
-00001000000000000000000000000100
-00100000000000010000000000000101
 00001000000000000000000000000100
 00100000000010101111111111111111
+
 
 ```
 
@@ -519,7 +505,7 @@ end: addi $10, $0, -1
 #### Assembly
 ```
         addi $1, $0, 0
-        addi $2, $0, 0 
+        addi $2, $0, 0
         addi $3, $0, 10
         addi $4, $0, 3
 loop:   beq $2, $3, end
@@ -562,10 +548,10 @@ end: addi $10, $0, -1
 | 3. Factorial Calculator| 36 | 36 |
 | 4. Sequential Branch Statements| 15 | 14 |
 | 5. Every Second Branch Taken Loop| 19 | 18 |
-| 6. Every Branch Taken Loop |  96 | 96 | 
-| 7. Taken Taken |  122 | 113 | 
-| 8. Taken - Not Taken |  76 | 75 | 
-| 9. Not-Taken Taken |  X | X | 
-| 10. Not-Taken Not-Taken |  X | X | 
-| 11. Taken, Taken, Taken - Not-Taken |  124 | 121 | 
-| 12. Not-Taken, Not-Taken, Not-Taken |  109 | 104 | 
+| 6. Every Branch Taken Loop |  96 | 96 |
+| 7. Taken Taken |  122 | 113 |
+| 8. Taken - Not Taken |  76 | 75 |
+| 9. Not-Taken Taken |  X | X |
+| 10. Not-Taken Not-Taken |  X | X |
+| 11. Taken, Taken, Taken - Not-Taken |  124 | 121 |
+| 12. Not-Taken, Not-Taken, Not-Taken |  109 | 104 |

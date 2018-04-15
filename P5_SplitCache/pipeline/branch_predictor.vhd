@@ -13,6 +13,7 @@ entity branch_predictor is
     if_instruction: in std_logic_vector(31 downto 0);
     id_instruction: in std_logic_vector(31 downto 0);
     id_branch_taken: in std_logic;
+    id_wrong_prediction: in std_logic;
     id_branch_target_address: in std_logic_vector(31 downto 0);
     if_pc: in std_logic_vector(31 downto 0);
     id_pc: in std_logic_vector(31 downto 0);
@@ -36,11 +37,15 @@ signal bat: branch_address_table := (others => (others => '0'));
 signal last_branch_1: std_logic := '0';
 signal last_branch_2: std_logic := '0';
 signal last_branch_3: std_logic := '0';
+signal last_branch_4: std_logic := '0';
 signal internal_branch_taken: std_logic := '0';
+signal last_branch_taken: std_logic := '0';
 signal global_predictor: std_logic_vector(2 downto 0);
+signal old_global_predictor: std_logic_vector(2 downto 0);
 begin
 
 global_predictor <= last_branch_3 & last_branch_2 & last_branch_1;
+old_global_predictor <= last_branch_4 & last_branch_3 & last_branch_2;
 
 predict_branch: process(if_pc, if_instruction)
 	variable var_bpt_row: std_logic_vector(15 downto 0);
@@ -66,13 +71,12 @@ predict_branch: process(if_pc, if_instruction)
           var_predict_branch_taken := '1';
         when "11" =>
           var_predict_branch_taken := '1';
-          when others =>
-            var_predict_branch_taken := 'X';
+        when others =>
+          var_predict_branch_taken := 'X';
       end case;
 
       predict_branch_taken <= var_predict_branch_taken;
       internal_branch_taken <= var_predict_branch_taken;
-
     end if;
     --Get branch target address from array
     branch_target_address <= bat(to_integer(unsigned(if_pc(13 downto 2))));
@@ -87,21 +91,34 @@ update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_addre
     if (rising_edge(clock)) then
       if(internal_branch_taken = '1' and id_stall_write = '1') then
         last_branch_1 <= '1';
+        last_branch_taken <= '1';
         last_branch_2 <= last_branch_1;
         last_branch_3 <= last_branch_2;
       end if;
       --Make sure we arent stalling when updating whether we took the last branch
       if ((id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101") and id_stall_write = '1') then
          -- Update the global branch taken
-        last_branch_1 <= id_branch_taken;
-        last_branch_2 <= last_branch_1;
-        last_branch_3 <= last_branch_2;
+         last_branch_1 <= id_branch_taken;
+
+        -- if the last branch was taken, unless we predicted wrong, don't shift (it was already done)
+        if(last_branch_taken ='0') then
+          last_branch_2 <= last_branch_1;
+          last_branch_3 <= last_branch_2;
+        else
+          last_branch_taken <='0';
+        end if;
+
 
         ------update bpt -----
         --Index subtract by 1 since this is the incremented pc address, not the pc address of the branch
         var_bpt_row := bpt(to_integer(unsigned(id_pc(13 downto 2)) - 1 ));
         --Based on the history in the id stage, select the predictor
-        var_global_predictor_index := to_integer(unsigned(global_predictor) * 2);
+        if( last_branch_taken = '1') then
+          var_global_predictor_index := to_integer(unsigned(old_global_predictor) * 2);
+        else
+          var_global_predictor_index := to_integer(unsigned(global_predictor) * 2);
+        end if;
+
         --Update the 2 bit predictor based on whether the branch was taken
         var_local_predictor := var_bpt_row(var_global_predictor_index + 1 downto var_global_predictor_index);
 
@@ -128,7 +145,6 @@ update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_addre
             end if;
           when others =>
         end case;
-
 
         -- Update the branch target address and store it so we can make predictions in the if stage in the future
         bat(to_integer(unsigned(id_pc(13 downto 2))) - 1) <= id_branch_target_address;
