@@ -550,7 +550,7 @@ end: addi $10, $0, -1
 | 6. Every Branch Taken Loop |  96 | 96 |
 | 7. Taken Taken |  122 | 113 |
 | 8. Taken - Not Taken |  76 | 75 |
-| 9. Not-Taken Taken |  X | X |
-| 10. Not-Taken Not-Taken |  X | X |
+| 9. Not-Taken Taken |  22 | 22 |
+| 10. Not-Taken Not-Taken |  80 | 80 |
 | 11. Taken, Taken, Taken - Not-Taken |  124 | 121 |
 | 12. Not-Taken, Not-Taken, Not-Taken |  109 | 104 |
