@@ -94,6 +94,7 @@ update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_addre
         last_branch_taken <= '1';
         last_branch_2 <= last_branch_1;
         last_branch_3 <= last_branch_2;
+        last_branch_4 <= last_branch_3;
       end if;
       --Make sure we arent stalling when updating whether we took the last branch
       if ((id_instruction(31 downto 26) = "000100" or id_instruction(31 downto 26) = "000101") and id_stall_write = '1') then
@@ -104,8 +105,9 @@ update_prediction: process(clock, id_pc, id_branch_taken, id_branch_target_addre
         if(last_branch_taken ='0') then
           last_branch_2 <= last_branch_1;
           last_branch_3 <= last_branch_2;
+          last_branch_4 <= last_branch_3;
         else
-          last_branch_taken <='0';
+          last_branch_taken <=internal_branch_taken;
         end if;
 
 
