@@ -19,7 +19,6 @@ vcom hazard_detection.vhd
 vcom hazard_detection_mux.vhd
 vcom idex_register.vhd
 vcom ifid_register.vhd
-vcom instruction_decoder.vhd
 vcom instruction_memory.vhd
 vcom memwb_register.vhd
 vcom mux2to1.vhd
